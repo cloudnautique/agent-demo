@@ -119,7 +119,7 @@ app.get('/api/users/:user_id/policies/:policy_number/claims', async (req, res) =
 app.post('/api/users/:user_id/policies/:policy_number/claims', upload.single('invoice'), async (req, res) => {
   try {
     const { user_id, policy_number } = req.params;
-    const { claim_date, damage_date, date_of_repair } = req.body;
+    const { claim_date, damage_date, date_of_repair, cause_of_damage } = req.body;
     const invoicePath = req.file.path;
 
     const formData = new FormData();
@@ -127,6 +127,7 @@ app.post('/api/users/:user_id/policies/:policy_number/claims', upload.single('in
     formData.append('claim_date', claim_date);
     formData.append('damage_date', damage_date);
     formData.append('date_of_repair', date_of_repair);
+    formData.append('cause_of_damage', cause_of_damage);
 
     const response = await axios.post(`${backendURL}/users/${user_id}/policies/${policy_number}/claims`, formData, {
       headers: {

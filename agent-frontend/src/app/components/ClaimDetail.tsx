@@ -116,6 +116,14 @@ export default function ClaimDetail({ params }) {
                                     <TableCell>{claim.damage_date}</TableCell>
                                     <TableCell>{claim.date_of_repair}</TableCell>
                                 </TableRow>
+                                {claim.cause_of_damage && (
+                                    <TableRow>
+                                        <TableCell colSpan={6}>
+                                            <Typography variant="h6">Cause of Damage</Typography>
+                                            {claim.cause_of_damage}
+                                        </TableCell>
+                                    </TableRow>
+                                )}
                             </TableBody>
                         </Table>
                     </Paper>
@@ -150,14 +158,33 @@ export default function ClaimDetail({ params }) {
                                 <TableRow>
                                     <TableCell>Policy Number</TableCell>
                                     <TableCell>Type</TableCell>
-                                    <TableCell>Vehicle</TableCell>
+                                    <TableCell>
+                                        {policy.policy.type === "Windscreen" ? (`Vehicle`) : (`Device`)}
+                                    </TableCell>
                                 </TableRow>
                             </TableHead>
                             <TableBody>
                                 <TableRow>
                                     <TableCell>{policy.policy.policy_number}</TableCell>
                                     <TableCell>{policy.policy.type}</TableCell>
-                                    <TableCell>{policy.policy.vehicle ? `${policy.policy.vehicle.year} ${policy.policy.vehicle.make} ${policy.policy.vehicle.model} - license plate: ${policy.policy.vehicle.license_plate}` : 'N/A'}</TableCell>
+                                    <TableCell>
+                                        {policy.policy.type === "Windscreen" ? (
+                                            policy.policy.vehicle ? (
+                                                `${policy.policy.vehicle.year} ${policy.policy.vehicle.make} ${policy.policy.vehicle.model} - license plate: ${policy.policy.vehicle.license_plate}`
+                                            ) : (
+                                                'N/A'
+                                            )
+                                        ) : policy.policy.type === "Device" ? (
+                                            policy.policy.device ? (
+                                                `${policy.policy.device.manufacturer} - ${policy.policy.device.model}`
+                                            ) : (
+                                                'N/A'
+                                            )
+                                        ) : (
+                                            'N/A'
+                                        )
+                                        }
+                                    </TableCell>
                                 </TableRow>
                             </TableBody>
                         </Table>

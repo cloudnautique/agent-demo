@@ -53,7 +53,8 @@ claim_model = api.model('Claim', {
     'status': fields.String(required=True, description='Status of the claim (Pending, Reviewing, Approved, Denied)', enum=['Pending', 'Reviewing', 'Approved', 'Denied']),
     'status_message': fields.String(description='Message from the insurance company regarding the claim status'),
     'internal_status': fields.String(required=True, description='Status of the claim (Pending, Reviewing, 2nd Level Review, Approved, Denied)', enum=['Pending', 'Reviewing', '2nd Level Review', 'Approved', 'Denied']),
-    'internal_status_message': fields.String(description='Message from the insurance company regarding the claim status')
+    'internal_status_message': fields.String(description='Message from the insurance company regarding the claim status'),
+    'cause_of_damage': fields.String(description='The cause of the damage for devices')
 })
 
 check_model = api.model('ClaimProcessingCheck', {
@@ -78,6 +79,19 @@ vehicle_model = api.model('Vehicle', {
     'drivers': fields.String(description='List of drivers associated with the vehicle')
 })
 
+device_model = api.model('Device', {
+    'id': fields.Integer(readOnly=True, description='The unique identifier of a device'),
+    'manufacturer': fields.String(readOnly=True, description='The manufacturer of the device'),
+    'model': fields.String(readOnly=True, description='The model of the device'),
+    'serial_number': fields.String(readOnly=True, description='The serial number of the device'),
+    'purchase_date': fields.String(readOnly=True, description='The purchase date of the device'),
+    'purchase_amount': fields.Float(readOnly=True, description='The purchase amount of the device'),
+    'purchase_location': fields.String(readOnly=True, description='The purchase location of the device'),
+    'depreciation_years': fields.Integer(readOnly=True, description='The number of years for depreciation'),
+    'depreciation_rate': fields.Float(readOnly=True, description='The depreciation rate of the device'),
+    'storage': fields.String(readOnly=True, description='The storage capacity of the device')
+})
+
 # Define the Policy model for documentation
 policy_model = api.model('Policy', {
     'id': fields.Integer(readOnly=True, description='The unique identifier of a policy'),
@@ -85,7 +99,7 @@ policy_model = api.model('Policy', {
     'policy_number': fields.String(required=True, description='The policy number'),
     'deductible': fields.Float(description='The deductible for the policy'),
     'vehicle': fields.Nested(vehicle_model, description='Details of the vehicle if applicable'),
-    # You can define a similar model for Device if needed
+    'device': fields.Nested(device_model, description='Details of the device if applicable')
 })
 
 # Define the User model for documentation
@@ -344,21 +358,26 @@ def get_checks_for_claim(policy_obj):
     policy_holder = policy_obj['policy_holder']
     checks = {}
      
-    checks["Windscreen"] = [
-             ('Verify damage_date is before claim_date', 'damage_date < claim_date', None, '<'),
-             ('Verify claim_date is before date_of_repair', 'claim_date < date_of_repair', None, '<'),
-             ('Verify License Plate of policy is on the invoice', policy["vehicle"]["license_plate"], None, 'IN'),
-             ('Verify Policy Number is on the invoice', policy["policy_number"], None, 'IN'),
-             ('Verify Name on the invoice reasonably matches the policy holder', f'{policy_holder["first_name"]} {policy_holder["last_name"]}', None, '=='),
-             ('Verify Claim Total invoiced cost does not exceed 1200', '1200', None, '<='),
-             ('Verify the Claim invoiced total exceeds deductible', policy["deductible"], None, '>'),
-             ('Verify labor invoiced costs are less than or equal to 150', '150', None, '<='),
-             ('Verify the adhesive set invoiced costs are less than or equal to 40', '40', None, '<='),
-             ('Verify Env and small materials invoiced costs are less than or equal to 10', '10', None, '<='),
-             ('Verify Sensor invoiced costs are less than or equal to 10', '10', None, '<='),
-             ('Verify the calibration invoiced costs are less than or equal to 100', '100', None, '<='),
-    ]
+    if policy["type"] == "Windscreen":
+        checks["Windscreen"] = [
+                 ('Verify damage_date is before claim_date', 'damage_date < claim_date', None, '<'),
+                 ('Verify claim_date is before date_of_repair', 'claim_date < date_of_repair', None, '<'),
+                 ('Verify License Plate of policy is on the invoice', policy["vehicle"]["license_plate"], None, 'IN'),
+                 ('Verify Policy Number is on the invoice', policy["policy_number"], None, 'IN'),
+                 ('Verify Name on the invoice reasonably matches the policy holder', f'{policy_holder["first_name"]} {policy_holder["last_name"]}', None, '=='),
+                 ('Verify Claim Total invoiced cost does not exceed 1200', '1200', None, '<='),
+                 ('Verify the Claim invoiced total exceeds deductible', policy["deductible"], None, '>'),
+                 ('Verify labor invoiced costs are less than or equal to 150', '150', None, '<='),
+                 ('Verify the adhesive set invoiced costs are less than or equal to 40', '40', None, '<='),
+                 ('Verify Env and small materials invoiced costs are less than or equal to 10', '10', None, '<='),
+                 ('Verify Sensor invoiced costs are less than or equal to 10', '10', None, '<='),
+                 ('Verify the calibration invoiced costs are less than or equal to 100', '100', None, '<='),
+        ]
     checks["Device"] = [
+        ('Determine and record the depreciated value of device based on purchase date and amount', None, None, None),
+        ('Check the current prices online to determine replacement value', None, None, None),
+        ('Determine the repair cost of the device', None, None, None),
+        ('Find the minimum of the replacement value and repair cost', 'min(replacement_value, repair_cost)', None, 'min')
     ]
     return checks[policy["type"]]
 
@@ -382,11 +401,17 @@ def get_policy_processing_object(id):
        vehicle = db.execute('SELECT * FROM Vehicles WHERE id = ?', (policy['vehicle_id'],)).fetchone()
 
    # You can add similar logic for devices if needed
+   device = None
+   if policy['device_id']:
+       device = db.execute('SELECT * FROM Devices WHERE id = ?', (policy['device_id'],)).fetchone()
 
    # Construct the response
    policy_data = dict(policy)
    if vehicle:
        policy_data['vehicle'] = dict(vehicle)
+
+   if device:
+       policy_data['device'] = dict(device)
 
    combined_policy = {
        'policy': policy_data,

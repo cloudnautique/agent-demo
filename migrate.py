@@ -88,6 +88,7 @@ def create_tables():
             status_message TEXT,                -- Message from the insurance company regarding the claim status
             internal_status TEXT NOT NULL DEFAULT 'Pending',  -- Status of the claim (Pending, Reviewing, 2nd Level Review, Approved, Denied)
             internal_status_message TEXT,                -- Message from the insurance company regarding the claim status
+            cause_of_damage TEXT,               -- The cause of the damage for devices
             FOREIGN KEY (policy_id) REFERENCES Policy(id)
         )
     """

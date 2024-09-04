@@ -1,0 +1,75 @@
+Name: process_claim
+Tools: http://127.0.0.1:5100/swagger.json
+Context: claim_processing_rules
+Context: damage_context
+Tools: price_checker, depreciated_value_calculator, repair_cost_calc
+
+1. Get the claim from the tools available and update both the status and internal_status fields to Reviewing.
+1. Get ALL of the checks from the tools available for the claim.
+1. Get the policy info from the tools available.
+1. Use the policy and claim information to process the claim.
+   a. Process EACH and EVERY check sequentially and update each check with the results.
+1. If all checks PASS the claim status to Approved, set a message with final determination of payout.
+1. If any checks FAIL set the claim internal_status to 2nd review
+---
+Name: claim_processing_rules
+
+#!sys.echo
+NEVER hallucinate
+If no claim is found STOP
+NEVER APPROVE if there are zero checks.
+NEVER use parallel tool when processing checks
+Always gather information before processing the checks.
+Process ALL checks even if there are failures.
+---
+Name: damage_context
+
+#!sys.echo
+
+Main categories of damage:
+Screen replacement needed
+Battery replacement
+Camera repair
+Water damage
+Charger port repair
+Lost Device
+---
+Name: price_checker
+Description: Check the price for a device based on current rates
+Tools: github.com/gptscript-ai/browser
+Params: manufacturer: Manufacturer of the device
+Params: model: model name of the device
+Params: specs: complete comma separate list of specs for the device
+
+1. Use shopping.google.com to search for the device by ${manufacturer}, ${model}, and ${specs}
+1. On the page, look for items that match the specs as closely as possible. Assume base model if not specified
+1. Determine the average price for a new version of the device matching the specs excluding the lowest and highest and using at least 3 price points.
+1. Find the highest and lowest values for the device.
+1. Return the average, lowest price and highest price. Also include the Shop and their price for all numbers used.
+---
+Name: depreciated_value_calculator
+Description: Calculates the residual percentage value of a device.
+Params: device_age: the age of the device
+Params: depreciation_years: The number of years to depreciate the device
+Params: purchase_price: price paid for the device
+
+If device is < 85% of ${DEPRECIATION_YEARS} years, take off 20% per year.
+If device is  between 85-200% of ${DEPRECIATION_YEARS} years the value is 15%.
+If the device is >= 200% of ${DEPRECIATION_YEARS} years, the residual value is 0%
+
+Return the product of ${PURCHASE_PRICE} and it's depreciation percentage.
+---
+Name: repair_cost_calc
+Description: Determine the repair cost of a device
+Tools: github.com/gptscript-ai/browser
+Params: manufacturer: Manufacturer of the device
+Params: model: model name of the device
+Params: specs: complete comma separate list of specs for the device
+Params: repair: the repair needed for the device
+
+1. Use https://swappa.com/repair/phone-repair-calculator to determine how much a phone repair is estimated to cost.
+1. First, Select the phone model from the product select drop down. The other options are disabled until this is done.
+1. Next, select the storage size from the storage-select drop down. This is disabled until the phone is selected.
+1. Then select the repair service from the service-repair drop down. This is disabled until the phone model is selected.
+1. If there is no repair option for that type simply return not repairable.
+1. Press "Get Prices" button and then return the dollar amount to repair the device if there is one.

@@ -260,7 +260,8 @@ claim_model_output = api.model('ClaimOutput', {
     'damage_date': fields.String(required=True, description='Date the repair is scheduled (ISO8601 format)'),
     'date_of_repair': fields.String(required=True, description='Date the repair was completed (ISO8601 format)'),
     'status': fields.String(description='Status of the claim', default='Pending'),
-    'status_message': fields.String(required=False, description='Message from the insurance company regarding the claim status')
+    'status_message': fields.String(required=False, description='Message from the insurance company regarding the claim status'),
+    'cause_of_damage': fields.String(description='Cause of the damage')
 })
 
 login_response_model = api.model('LoginResponse', {
@@ -283,6 +284,7 @@ claim_parser.add_argument('invoice', location='files', type=FileStorage, require
 claim_parser.add_argument('claim_date', location='form', required=True, type=str, help='Date the claim was created (ISO8601 format)')
 claim_parser.add_argument('damage_date', location='form', required=True, type=str, help='Date the repair is scheduled (ISO8601 format)')
 claim_parser.add_argument('date_of_repair', location='form', required=True, type=str, help='Date the repair was completed (ISO8601 format)')
+claim_parser.add_argument('cause_of_damage', location='form', type=str, help='Cause of damage to the device')
 
 # Namespaces for organization
 ns_user = api.namespace("users", description="User operations")
@@ -502,8 +504,7 @@ class PolicyClaims(Resource):
         claim_date = convert_to_iso8601(args['claim_date'])
         damage_date = convert_to_iso8601(args['damage_date'])
         date_of_repair = convert_to_iso8601(args['date_of_repair'])
-        print("IN the post")
-        print(policy_internal_id, claim_date, damage_date, date_of_repair)
+        cause_of_damage = args['cause_of_damage']
 
 
         try:
@@ -522,15 +523,12 @@ class PolicyClaims(Resource):
                 print("Inserting values: ", policy_internal_id, file_path, claim_date, damage_date, date_of_repair)
                 # Insert a new claim with the file path as the invoice location
                 cursor.execute(
-                    "INSERT INTO Claims (policy_id, invoices, claim_date, damage_date, date_of_repair) VALUES (?, ?, ?, ?, ?)",
-                    (policy_internal_id, file_path, claim_date, damage_date, date_of_repair),
+                    "INSERT INTO Claims (policy_id, invoices, claim_date, damage_date, date_of_repair, cause_of_damage) VALUES (?, ?, ?, ?, ?, ?)",
+                    (policy_internal_id, file_path, claim_date, damage_date, date_of_repair, cause_of_damage),
                 )
 
-                print("Claim inserted")
-                
                 # Commit the transaction
                 conn.commit()
-                print("Claim committed")
 
                 # Fetch the newly created claim
                 claim_id = cursor.lastrowid
