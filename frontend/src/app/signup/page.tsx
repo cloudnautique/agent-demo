@@ -33,15 +33,8 @@ export default function SignUpPage() {
             const response = await axios.post('/api/signup', userDetails);
             setSuccess(response.data.message);
 
-            // Update the user context with the signed-up user's details
-            setUser({
-                first_name: userDetails.first_name,
-                last_name: userDetails.last_name,
-                username: userDetails.username,
-            });
-
             // Redirect to the main page
-            router.push('/');
+            router.push('/signin');
         } catch (error) {
             setError(error.response?.data?.message || 'Failed to create user');
         }

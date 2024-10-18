@@ -76,6 +76,24 @@ app.get('/api/users/:id/policies', async (req, res) => {
   }
 });
 
+app.post('/api/users/:id/policies', async (req, res) => {
+  const userId = req.params.id;
+  const token = req.headers.authorization.split(' ')[1]; // Expecting
+  try {
+    const policyPayload = req.body;
+    const response = await axios.post(`${backendURL}/users/${userId}/policies`, policyPayload, {
+      headers: {
+        'Authorization': `Bearer ${token}`, // Include the JWT token in the request
+        'Content-Type': 'application/json',
+      },
+    });
+    res.status(200).json(response.data);
+  } catch (error) {
+    console.error('Error creating policy:', error);
+    res.status(500).json({ message: 'Error creating policy' });
+  }
+});
+
 // Get a specific policy for a specific user
 app.get('/api/users/:user_id/policies/:policy_number', async (req, res) => {
   const { user_id, policy_id } = req.params;
@@ -96,6 +114,10 @@ app.get('/api/users/:user_id/policies/:policy_number', async (req, res) => {
 // Get all claims for a specific policy
 app.get('/api/users/:user_id/policies/:policy_number/claims', async (req, res) => {
   const { user_id, policy_number } = req.params;
+
+  if (policy_number === 'undefined') {
+    return res.status(400).json({ message: 'Policy number is required' });
+  }
 
   try {
     const response = await axios.get(`${backendURL}/users/${user_id}/policies/${policy_number}/claims`, {
@@ -127,7 +149,9 @@ app.post('/api/users/:user_id/policies/:policy_number/claims', upload.single('in
     formData.append('claim_date', claim_date);
     formData.append('damage_date', damage_date);
     formData.append('date_of_repair', date_of_repair);
-    formData.append('cause_of_damage', cause_of_damage);
+    if (cause_of_damage) {
+      formData.append('cause_of_damage', cause_of_damage);
+    }
 
     const response = await axios.post(`${backendURL}/users/${user_id}/policies/${policy_number}/claims`, formData, {
       headers: {
@@ -140,6 +164,51 @@ app.post('/api/users/:user_id/policies/:policy_number/claims', upload.single('in
   } catch (error) {
     console.error('Error filing claim:', error);
     res.status(500).json({ message: 'Error filing claim', error: error.response?.data || error.message });
+  }
+});
+
+app.post('/api/users/:user_id/policies/:policy_number/vehicles', async (req, res) => {
+  const { user_id, policy_number } = req.params;
+  const token = req.headers.authorization.split(' ')[1]; // Expecting
+  try {
+    const vehiclePayload = req.body;
+    const response = await axios.post(`${backendURL}/users/${user_id}/policies/${policy_number}/vehicles`, vehiclePayload, {
+      headers: {
+        'Authorization': `Bearer ${token}`, // Include the JWT token in the request
+        'Content-Type': 'application/json',
+      },
+    });
+    res.status(200).json(response.data);
+  } catch (error) {
+    console.error('Error adding vehicle:', error);
+    res.status(500).json({ message: 'Error adding vehicle' });
+  }
+});
+
+// Add a device to a policy
+app.post('/api/users/:user_id/policies/:policy_number/devices', async (req, res) => {
+  const { user_id, policy_number } = req.params;
+  const token = req.headers.authorization?.split(' ')[1];
+
+  try {
+    const deviceData = req.body;
+    const response = await axios.post(
+      `${backendURL}/users/${user_id}/policies/${policy_number}/devices`,
+      deviceData,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+    res.status(201).json(response.data);
+  } catch (error) {
+    console.error('Error adding device:', error.response?.data || error.message);
+    res.status(500).json({
+      message: 'Error adding device',
+      error: error.response?.data || error.message,
+    });
   }
 });
 

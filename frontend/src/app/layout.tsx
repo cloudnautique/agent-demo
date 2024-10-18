@@ -41,7 +41,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 }
 
 function UserOptions() {
-  const { user, setUser } = useUser();
+  const { user, setUser, logout } = useUser();
   const router = useRouter();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
@@ -55,8 +55,8 @@ function UserOptions() {
   };
 
   const handleLogout = () => {
-    setUser(null); // Clear user context
-    router.push('/'); // Redirect to the home page
+    logout();
+    router.push('/');
     handleClose();
   };
 

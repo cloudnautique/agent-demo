@@ -1,6 +1,7 @@
 import sqlite3
 import hashlib
 import os
+import requests
 
 from functools import wraps
 from datetime import timedelta, datetime
@@ -19,7 +20,8 @@ from werkzeug.datastructures import FileStorage
 
 app = Flask(__name__)
 
-UPLOAD_FOLDER = "./uploads/"
+UPLOAD_FOLDER = "/Users/wmaxwell/code/cloudnautique/insurance_demo/uploads/"
+OTTO_SERVER_URL = "http://127.0.0.1:8080"
 
 # Define the servers for the OpenAPI spec
 servers = [
@@ -89,28 +91,32 @@ def owner_or_admin_required(resource_user_id_param="id"):
 
     return decorator
 
+
 def policy_belongs_to_user_or_admin(fn):
     @wraps(fn)
     def wrapper(*args, **kwargs):
         conn = get_db()
         current_user = get_jwt_identity()
-        user_id = kwargs.get('user_id')
-        policy_number = kwargs.get('policy_number')
+        user_id = kwargs.get("user_id")
+        policy_number = kwargs.get("policy_number")
         if policy_number is None or policy_number == "undefined":
             return jsonify({"message": "Invalid request"}), 400
 
         # Verify that the policy belongs to the user
         policy = conn.execute(
-            "SELECT * FROM Policy WHERE policy_number = ? AND user_id = ?", (policy_number, user_id)
+            "SELECT * FROM Policy WHERE policy_number = ? AND user_id = ?",
+            (policy_number, user_id),
         ).fetchone()
 
         # If no policy is found, or the user is not the owner and not an admin, return a forbidden response
-        if not policy and current_user['username'] != 'admin':
+        if not policy and current_user["username"] != "admin":
             return jsonify({"message": "Policy not found or access forbidden"}), 404
         # Pass the policy's internal ID to the wrapped function
-        kwargs['policy_internal_id'] = policy['id'] if policy else None
+        kwargs["policy_internal_id"] = policy["id"] if policy else None
         return fn(*args, **kwargs)
+
     return wrapper
+
 
 # Database connection function
 def get_db():
@@ -163,9 +169,13 @@ device_model_output = api.model(
         "serial_number": fields.String(
             unique=True, description="Serial number of the device"
         ),
-        "purchase_date": fields.String(description="Purchase date of the device (ISO8601 format)"),
+        "purchase_date": fields.String(
+            description="Purchase date of the device (ISO8601 format)"
+        ),
         "purchase_amount": fields.Float(description="Purchase amount of the device"),
-        "purchase_location": fields.String(description="Purchase location of the device"),
+        "purchase_location": fields.String(
+            description="Purchase location of the device"
+        ),
     },
 )
 
@@ -180,9 +190,13 @@ device_model_input = api.model(
         "serial_number": fields.String(
             unique=True, description="Serial number of the device"
         ),
-        "purchase_date": fields.String(description="Purchase date of the device (ISO8601 format)"),
+        "purchase_date": fields.String(
+            description="Purchase date of the device (ISO8601 format)"
+        ),
         "purchase_amount": fields.Float(description="Purchase amount of the device"),
-        "purchase_location": fields.String(description="Purchase location of the device"),
+        "purchase_location": fields.String(
+            description="Purchase location of the device"
+        ),
     },
 )
 
@@ -197,7 +211,9 @@ vehicle_model_output = api.model(
         "license_plate": fields.String(
             unique=True, description="License plate of the vehicle"
         ),
-        "drivers": fields.String(description="Drivers of the vehicle (list of user IDs or names)"),
+        "drivers": fields.String(
+            description="Drivers of the vehicle (list of user IDs or names)"
+        ),
     },
 )
 
@@ -230,8 +246,16 @@ policy_model_output = api.model(
             required=True, description="ID of the user who owns the policy"
         ),
         "deductible": fields.Float(description="Deductible amount"),
-        "device": fields.Nested(device_model_output, description="Device details (if applicable)", allow_null=True),
-        "vehicle": fields.Nested(vehicle_model_output, description="Vehicle details (if applicable)", allow_null=True),
+        "device": fields.Nested(
+            device_model_output,
+            description="Device details (if applicable)",
+            allow_null=True,
+        ),
+        "vehicle": fields.Nested(
+            vehicle_model_output,
+            description="Vehicle details (if applicable)",
+            allow_null=True,
+        ),
     },
 )
 
@@ -252,46 +276,88 @@ policy_model_input = api.model(
     },
 )
 
-claim_model_output = api.model('ClaimOutput', {
-    'id': fields.Integer(readOnly=True),
-    'policy_id': fields.Integer(required=True, description='Policy ID associated with the claim'),
-    'invoices': fields.String(required=True, description='Invoices associated with the claim'),
-    'claim_date': fields.String(required=True, description='Date the claim was created (ISO8601 format)'),
-    'damage_date': fields.String(required=True, description='Date the repair is scheduled (ISO8601 format)'),
-    'date_of_repair': fields.String(required=True, description='Date the repair was completed (ISO8601 format)'),
-    'status': fields.String(description='Status of the claim', default='Pending'),
-    'status_message': fields.String(required=False, description='Message from the insurance company regarding the claim status'),
-    'cause_of_damage': fields.String(description='Cause of the damage')
-})
+claim_model_output = api.model(
+    "ClaimOutput",
+    {
+        "id": fields.Integer(readOnly=True),
+        "policy_id": fields.Integer(
+            required=True, description="Policy ID associated with the claim"
+        ),
+        "invoices": fields.String(
+            required=True, description="Invoices associated with the claim"
+        ),
+        "claim_date": fields.String(
+            required=True, description="Date the claim was created (ISO8601 format)"
+        ),
+        "damage_date": fields.String(
+            required=True, description="Date the repair is scheduled (ISO8601 format)"
+        ),
+        "date_of_repair": fields.String(
+            required=True, description="Date the repair was completed (ISO8601 format)"
+        ),
+        "status": fields.String(description="Status of the claim", default="Pending"),
+        "status_message": fields.String(
+            required=False,
+            description="Message from the insurance company regarding the claim status",
+        ),
+        "cause_of_damage": fields.String(description="Cause of the damage"),
+    },
+)
 
-login_response_model = api.model('LoginResponse', {
-    'access_token': fields.String(description='JWT access token'),
-    'user': fields.Nested(user_model_output, description='User object')
-})
+login_response_model = api.model(
+    "LoginResponse",
+    {
+        "access_token": fields.String(description="JWT access token"),
+        "user": fields.Nested(user_model_output, description="User object"),
+    },
+)
 
-api.add_model('DeviceInput', device_model_input)
-api.add_model('VehicleInput', vehicle_model_input)
-api.add_model('PolicyInput', policy_model_input)
-api.add_model('ClaimOutput', claim_model_output)
-api.add_model('LoginResponse', login_response_model)
-api.add_model('UserInput', user_model_input)
-api.add_model('UserOutput', user_model_output)
-api.add_model('PolicyOutput', policy_model_output)
+api.add_model("DeviceInput", device_model_input)
+api.add_model("VehicleInput", vehicle_model_input)
+api.add_model("PolicyInput", policy_model_input)
+api.add_model("ClaimOutput", claim_model_output)
+api.add_model("LoginResponse", login_response_model)
+api.add_model("UserInput", user_model_input)
+api.add_model("UserOutput", user_model_output)
+api.add_model("PolicyOutput", policy_model_output)
 
 # Claim parser for file upload
 claim_parser = reqparse.RequestParser()
-claim_parser.add_argument('invoice', location='files', type=FileStorage, required=True, help='Invoice file')
-claim_parser.add_argument('claim_date', location='form', required=True, type=str, help='Date the claim was created (ISO8601 format)')
-claim_parser.add_argument('damage_date', location='form', required=True, type=str, help='Date the repair is scheduled (ISO8601 format)')
-claim_parser.add_argument('date_of_repair', location='form', required=True, type=str, help='Date the repair was completed (ISO8601 format)')
-claim_parser.add_argument('cause_of_damage', location='form', type=str, help='Cause of damage to the device')
+claim_parser.add_argument(
+    "invoice", location="files", type=FileStorage, required=True, help="Invoice file"
+)
+claim_parser.add_argument(
+    "claim_date",
+    location="form",
+    required=True,
+    type=str,
+    help="Date the claim was created (ISO8601 format)",
+)
+claim_parser.add_argument(
+    "damage_date",
+    location="form",
+    required=True,
+    type=str,
+    help="Date the repair is scheduled (ISO8601 format)",
+)
+claim_parser.add_argument(
+    "date_of_repair",
+    location="form",
+    required=True,
+    type=str,
+    help="Date the repair was completed (ISO8601 format)",
+)
+claim_parser.add_argument(
+    "cause_of_damage", location="form", type=str, help="Cause of damage to the device"
+)
 
 # Namespaces for organization
 ns_user = api.namespace("users", description="User operations")
 ns_policy = api.namespace("policies", description="Policy operations")
 ns_claim = api.namespace("claims", description="Claim operations")
-ns_device = api.namespace('devices', description='Device operations')
-ns_vehicle = api.namespace('vehicles', description='Vehicle operations')
+ns_device = api.namespace("devices", description="Device operations")
+ns_vehicle = api.namespace("vehicles", description="Vehicle operations")
+
 
 # CRUD Operations for User
 @ns_user.route("/")
@@ -333,7 +399,9 @@ class UserList(Resource):
 
         # Fetch the newly created user
         user_id = cursor.lastrowid
-        new_user = conn.execute("SELECT * FROM User WHERE id = ?", (user_id,)).fetchone()
+        new_user = conn.execute(
+            "SELECT * FROM User WHERE id = ?", (user_id,)
+        ).fetchone()
 
         return dict(new_user), 201
 
@@ -415,11 +483,15 @@ class UserPolicies(Resource):
         conn = get_db()
         data = request.json
 
+        new_deductible = data.get("deductible", 0.0)
+        if new_deductible == "":
+            new_deductible = 0.0
+
         # Insert policy
         cursor = conn.cursor()
         cursor.execute(
             "INSERT INTO Policy (type, user_id, policy_number, deductible) VALUES (?, ?, ?, ?)",
-            (data["type"], user_id, data["policy_number"], data.get("deductible")),
+            (data["type"], user_id, data["policy_number"], new_deductible),
         )
         conn.commit()
         return {"message": "Policy created successfully"}, 201
@@ -434,7 +506,8 @@ class SpecificPolicy(Resource):
         """Get a specific policy for a specific user"""
         conn = get_db()
         policy = conn.execute(
-            "SELECT * FROM Policy WHERE id = ? AND policy_number = ? AND user_id = ?", (policy_internal_id, policy_number, user_id)
+            "SELECT * FROM Policy WHERE id = ? AND policy_number = ? AND user_id = ?",
+            (policy_internal_id, policy_number, user_id),
         ).fetchone()
         if policy is None:
             return {"message": "Policy not found"}, 404
@@ -476,6 +549,7 @@ class SpecificPolicy(Resource):
         conn.commit()
         return {"message": "Policy updated successfully"}
 
+
 @ns_user.route("/<int:user_id>/policies/<string:policy_number>/claims")
 class PolicyClaims(Resource):
     @jwt_required()
@@ -500,31 +574,44 @@ class PolicyClaims(Resource):
         """File a new claim for a specific policy"""
         args = claim_parser.parse_args()
 
-        file = args['invoice']
-        claim_date = convert_to_iso8601(args['claim_date'])
-        damage_date = convert_to_iso8601(args['damage_date'])
-        date_of_repair = convert_to_iso8601(args['date_of_repair'])
-        cause_of_damage = args['cause_of_damage']
-
+        file = args["invoice"]
+        claim_date = convert_to_iso8601(args["claim_date"])
+        damage_date = convert_to_iso8601(args["damage_date"])
+        date_of_repair = convert_to_iso8601(args["date_of_repair"])
+        cause_of_damage = args["cause_of_damage"]
 
         try:
-            if file and file.filename != '':
+            if file and file.filename != "":
                 print("File received:", file.filename)
                 filename = secure_filename(file.filename)
-                file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+                file_path = os.path.join(app.config["UPLOAD_FOLDER"], filename)
                 file.save(file_path)
 
                 conn = get_db()
                 cursor = conn.cursor()
                 # Start a transaction
                 print("Transaction starting")
-                cursor.execute('BEGIN TRANSACTION')
+                cursor.execute("BEGIN TRANSACTION")
 
-                print("Inserting values: ", policy_internal_id, file_path, claim_date, damage_date, date_of_repair)
+                print(
+                    "Inserting values: ",
+                    policy_internal_id,
+                    file_path,
+                    claim_date,
+                    damage_date,
+                    date_of_repair,
+                )
                 # Insert a new claim with the file path as the invoice location
                 cursor.execute(
                     "INSERT INTO Claims (policy_id, invoices, claim_date, damage_date, date_of_repair, cause_of_damage) VALUES (?, ?, ?, ?, ?, ?)",
-                    (policy_internal_id, file_path, claim_date, damage_date, date_of_repair, cause_of_damage),
+                    (
+                        policy_internal_id,
+                        file_path,
+                        claim_date,
+                        damage_date,
+                        date_of_repair,
+                        cause_of_damage,
+                    ),
                 )
 
                 # Commit the transaction
@@ -532,7 +619,16 @@ class PolicyClaims(Resource):
 
                 # Fetch the newly created claim
                 claim_id = cursor.lastrowid
-                claim = conn.execute("SELECT * FROM Claims WHERE id = ?", (claim_id,)).fetchone()
+                claim = conn.execute(
+                    "SELECT * FROM Claims WHERE id = ?", (claim_id,)
+                ).fetchone()
+
+                try:
+                    requests.post(OTTO_SERVER_URL + "/invoke/claims-agent")
+                except Exception as e:
+                    print("Error invoking Otto server:", e)
+                except:
+                    print("Error invoking Otto server")
 
                 return dict(claim), 201
 
@@ -542,7 +638,7 @@ class PolicyClaims(Resource):
             print("SQLite error occurred")
             conn.rollback()
             return {"message": "An error occurred: " + str(e)}, 500
-        
+
         except Exception as e:
             # Rollback the transaction on error
             print(e)
@@ -555,6 +651,7 @@ class PolicyClaims(Resource):
 
         return {"message": "File upload failed"}, 400
 
+
 @ns_user.route("/<int:user_id>/policies/<string:policy_number>/claims/<int:claim_id>")
 class Claim(Resource):
     @jwt_required()
@@ -564,7 +661,8 @@ class Claim(Resource):
         """Get a specific claim for a specific policy"""
         conn = get_db()
         claim = conn.execute(
-            "SELECT * FROM Claims WHERE id = ? AND policy_id = ?", (claim_id, policy_internal_id)
+            "SELECT * FROM Claims WHERE id = ? AND policy_id = ?",
+            (claim_id, policy_internal_id),
         ).fetchone()
         if claim is None:
             return {"message": "Claim not found"}, 404
@@ -572,28 +670,38 @@ class Claim(Resource):
 
     @jwt_required()
     @policy_belongs_to_user_or_admin
-    @ns_claim.expect(api.parser().add_argument('invoice', location='files', type='file'))
+    @ns_claim.expect(
+        api.parser().add_argument("invoice", location="files", type="file")
+    )
     @ns_claim.marshal_with(claim_model_output)
     def put(self, user_id, policy_number, claim_id, policy_internal_id):
         """Update a specific claim for a specific policy"""
         conn = get_db()
         data = request.form  # using form data because we also handle files
-        file = request.files.get('invoice')
+        file = request.files.get("invoice")
 
         if file:
             filename = secure_filename(file.filename)
-            file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+            file_path = os.path.join(app.config["UPLOAD_FOLDER"], filename)
             file.save(file_path)
 
             # Update the claim with the provided data
             claim = conn.execute(
                 "UPDATE Claims SET invoices = ?, claim_date = ?, repair_date = ?, date_of_repair = ? WHERE id = ? AND policy_id = ?",
-                (file_path, data["claim_date"], data["repair_date"], data["date_of_repair"], claim_id, policy_internal_id),
+                (
+                    file_path,
+                    data["claim_date"],
+                    data["repair_date"],
+                    data["date_of_repair"],
+                    claim_id,
+                    policy_internal_id,
+                ),
             )
             conn.commit()
             return dict(claim), 201
 
         return {"message": "File upload failed"}, 400
+
 
 @ns_user.route("/<int:user_id>/policies/<string:policy_id>/devices")
 class DeviceList(Resource):
@@ -607,7 +715,7 @@ class DeviceList(Resource):
             "SELECT * FROM Policy WHERE id = ?", (policy_id,)
         ).fetchone()
 
-        if policy is not None and policy['device_id'] is None:
+        if policy is not None and policy["device_id"] is None:
             return []
 
         devices = conn.execute(
@@ -621,15 +729,24 @@ class DeviceList(Resource):
     def post(self, user_id, policy_id):
         """Create a new device for a specific policy"""
         depreciation_years = 5
-        depreciation_factor = .20
-        if data.get["purchase_amount"] > 5000.00:
+        depreciation_rate = 0.20
+
+        conn = get_db()
+        policy = conn.execute(
+            "SELECT * FROM Policy WHERE policy_number = ?", (policy_id,)
+        ).fetchone()
+        policy_internal_id = policy["id"]
+
+        data = request.json
+        print("Data:", data)
+        if float(data.get("purchase_amount", 0.0)) > 5000.00:
             depreciation_years = 10
-            depreciation_factor = .10
+            depreciation_rate = 0.10
         conn = get_db()
         cursor = conn.cursor()
-        data = request.json
+
         cursor.execute(
-            "INSERT INTO Devices (manufacturer, model, storage, serial_number, purchase_date, purchase_amount, purchase_location, depreciation_years, depreciation_factor) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            "INSERT INTO Devices (manufacturer, model, storage, serial_number, purchase_date, purchase_amount, purchase_location, depreciation_years, depreciation_rate) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
             (
                 data["manufacturer"],
                 data["model"],
@@ -639,19 +756,23 @@ class DeviceList(Resource):
                 data.get("purchase_amount"),
                 data.get("purchase_location"),
                 depreciation_years,
-                depreciation_factor
+                depreciation_rate,
             ),
         )
         conn.commit()
-        policy = conn.execute(
-            "SELECT * FROM Policy WHERE id = ?", (policy_id,)
-        ).fetchone()
-        
+
+        # Update Policy
+        device_id = cursor.lastrowid
+        print("DEVICEID:", device_id)
+        print("POLICYID:", policy_id)
         cursor.execute(
-            "UPDATE Policy SET device_id = ? WHERE id = ?", (cursor.lastrowid, policy["id"])
+            "UPDATE Policy SET device_id = ? WHERE id = ?",
+            (device_id, policy_internal_id),
         )
         conn.commit()
+
         return {"message": "Device created successfully"}, 201
+
 
 @ns_user.route("/<int:user_id>/policies/<string:policy_id>/devices/<int:device_id>")
 class Device(Resource):
@@ -662,7 +783,8 @@ class Device(Resource):
         """Get a specific device by ID"""
         conn = get_db()
         device = conn.execute(
-            "SELECT * FROM Devices WHERE id = ? AND policy_id = ?", (device_id, policy_id)
+            "SELECT * FROM Devices WHERE id = ? AND policy_id = ?",
+            (device_id, policy_id),
         ).fetchone()
         if device is None:
             return {"message": "Device not found"}, 404
@@ -697,9 +819,12 @@ class Device(Resource):
     def delete(self, user_id, policy_id, device_id):
         """Delete a specific device by ID"""
         conn = get_db()
-        conn.execute("DELETE FROM Devices WHERE id = ? AND policy_id = ?", (device_id, policy_id))
+        conn.execute(
+            "DELETE FROM Devices WHERE id = ? AND policy_id = ?", (device_id, policy_id)
+        )
         conn.commit()
         return {"message": "Device deleted successfully"}, 204
+
 
 @ns_user.route("/<int:user_id>/policies/<string:policy_number>/vehicles")
 class VehicleList(Resource):
@@ -714,7 +839,7 @@ class VehicleList(Resource):
         ).fetchone()
         policy = dict(policy)
         vehicles = conn.execute(
-            "SELECT * FROM Vehicles WHERE id = ?", (policy['vehicle_id'],)
+            "SELECT * FROM Vehicles WHERE id = ?", (policy["vehicle_id"],)
         ).fetchall()
         return [dict(row) for row in vehicles]
 
@@ -728,20 +853,30 @@ class VehicleList(Resource):
         data = request.json
         cursor.execute(
             "INSERT INTO Vehicles (make, model, year, license_plate, drivers) VALUES (?, ?, ?, ?, ?)",
-            (data["make"], data["model"], data["year"], data.get("license_plate"), user_id),
+            (
+                data["make"],
+                data["model"],
+                data["year"],
+                data.get("license_plate"),
+                user_id,
+            ),
         )
         conn.commit()
 
         # Update Policy
         vehicle_id = cursor.lastrowid
         cursor.execute(
-            "UPDATE Policy SET vehicle_id = ? WHERE id = ?", (vehicle_id, policy_internal_id)
+            "UPDATE Policy SET vehicle_id = ? WHERE id = ?",
+            (vehicle_id, policy_internal_id),
         )
         conn.commit()
 
         return {"message": "Vehicle created successfully"}, 201
 
-@ns_user.route("/<int:user_id>/policies/<string:policy_number>/vehicles/<int:vehicle_id>")
+
+@ns_user.route(
+    "/<int:user_id>/policies/<string:policy_number>/vehicles/<int:vehicle_id>"
+)
 class Vehicle(Resource):
     @jwt_required()
     @policy_belongs_to_user_or_admin
@@ -750,7 +885,8 @@ class Vehicle(Resource):
         """Get a specific vehicle by ID"""
         conn = get_db()
         vehicle = conn.execute(
-            "SELECT * FROM Vehicles WHERE id = ? AND policy_id = ?", (vehicle_id, policy_internal_id)
+            "SELECT * FROM Vehicles WHERE id = ? AND policy_id = ?",
+            (vehicle_id, policy_internal_id),
         ).fetchone()
         if vehicle is None:
             return {"message": "Vehicle not found"}, 404
@@ -787,6 +923,7 @@ class Vehicle(Resource):
         conn.commit()
         return {"message": "Vehicle deleted successfully"}, 204
 
+
 @ns_user.route("/login")
 class UserLogin(Resource):
     @ns_user.expect(
@@ -820,9 +957,11 @@ class UserLogin(Resource):
         else:
             return {"message": "Invalid username or password"}, 401
 
+
 def convert_to_iso8601(date_str):
     date_obj = parser.parse(date_str)
     return date_obj.strftime("%Y-%m-%d")
+
 
 if __name__ == "__main__":
     app.run(debug=True)

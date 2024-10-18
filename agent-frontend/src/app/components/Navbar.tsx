@@ -48,6 +48,7 @@ const Navbar = () => {
         localStorage.removeItem('username');
         setUsername(null);
         handleMenuClose();
+        window.location.href = '/';
     };
 
     useEffect(() => {

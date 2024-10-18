@@ -45,7 +45,7 @@ export default function LoginForm({ onClose, onLoginSuccess }) {
             }
 
             // Redirect to the main page
-            router.push('/');
+            window.location.href = '/';
         } catch (error) {
             setError(error.response?.data?.message || 'Failed to sign in');
         }

@@ -12,6 +12,14 @@ export default function HomePage() {
   const [claims, setClaims] = useState([]);
   const [policiesFetched, setPoliciesFetched] = useState(false);
 
+  const handleAddVehicleDevice = (policy) => {
+    if (policy.type === 'Windscreen') {
+      router.push(`/policies/${policy.policy_number}/add-vehicle`);
+    } else if (policy.type === 'Device') {
+      router.push(`/policies/${policy.policy_number}/add-device`);
+    }
+  };
+
   useEffect(() => {
     if (user && token) {
       // If policies are not yet in context, fetch them
@@ -57,7 +65,7 @@ export default function HomePage() {
           .catch(error => console.error('Error fetching claims:', error));
       }
     }
-  }, [user, token, policies, setPolicies]);
+  }, [user, token, policies, setPolicies, policiesFetched]);
 
   return (
     <Container maxWidth="md" sx={{ mt: 8 }}>
@@ -92,18 +100,50 @@ export default function HomePage() {
             <Typography variant="h6" gutterBottom>
               Your Policies
             </Typography>
+            <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2 }}>
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={() => router.push('/add-policy')}
+                sx={{ mb: 2 }}
+              >
+                + Add Policy
+              </Button>
+            </Box>
             {policies.length > 0 ? (
               <List>
                 {policies.map((policy, index) => (
                   <ListItem key={index}>
                     <ListItemText
                       primary={`Policy ID: ${policy.policy_number}`}
-                      secondary={policy.type === 'Windscreen' ? (
-                        `Vehicle: ${policy.vehicle.make} ${policy.vehicle.model} (${policy.vehicle.year}) - License Plate: ${policy.vehicle.license_plate}`
-                      ) : (
-                        `Device: ${policy.device.manufacturer} - ${policy.device.model}`
-                      )}
+                      secondary={
+                        policy.type === 'Windscreen' ? (
+                          `Vehicle: ${policy.vehicle?.make || 'N/A'} ${policy.vehicle?.model || ''} (${policy.vehicle?.year || 'N/A'}) - License Plate: ${policy.vehicle?.license_plate || 'N/A'}`.trim()
+                        ) : (
+                          `Device: ${policy.device?.manufacturer || ''} - ${policy.device?.model || ''}`.trim()
+                        )
+                      }
                     />
+                    {!policy.vehicle && policy.type === 'Windscreen' ? (
+                      <Button
+                        variant="outlined"
+                        size="small"
+                        onClick={() => handleAddVehicleDevice(policy)}
+                      >
+                        Add Vehicle
+                      </Button>
+                    ) : null}
+
+                    {!policy.device && policy.type === 'Device' ? (
+                      <Button
+                        variant="outlined"
+                        size="small"
+                        onClick={() => handleAddVehicleDevice(policy)}
+                      >
+                        Add Device
+                      </Button>
+                    ) : null}
+
                   </ListItem>
                 ))}
               </List>
