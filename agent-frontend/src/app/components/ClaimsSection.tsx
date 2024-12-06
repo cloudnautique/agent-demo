@@ -4,10 +4,18 @@ import React from 'react';
 import { Table, TableBody, TableCell, TableHead, TableRow, Paper, Typography, Box } from '@mui/material';
 import { useRouter } from 'next/navigation';
 
-const ClaimsSection = ({ title, claims }) => {
+interface Claim {
+    id: string | number;
+    status: string;
+    claim_date: string;
+    damage_date: string;
+    date_of_repair: string;
+}
+
+const ClaimsSection = ({ title, claims }: { title: string, claims: Claim[] }) => {
     const router = useRouter();
 
-    const handleRowClick = (id) => {
+    const handleRowClick = (id: string | number) => {
         router.push(`/claims/${id}`);
     };
 

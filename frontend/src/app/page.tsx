@@ -6,19 +6,60 @@ import { useRouter } from 'next/navigation';
 import axios from 'axios';
 import { useUser } from './context/UserContext';
 
+interface Policy {
+  type: 'Windscreen' | 'Device';
+  policy_number: string;
+}
+
+interface ApiPolicy extends Policy {
+  policy_id: string;
+  id: string;
+  vehicle?: {
+    make?: string;
+    model?: string;
+    year?: string;
+    license_plate?: string;
+  };
+  device?: {
+    manufacturer?: string;
+    model?: string;
+  };
+}
+
+interface Claim {
+  id: string;
+  policy_id: string;
+  status: string;
+  status_message: string;
+}
+
 export default function HomePage() {
   const router = useRouter();
   const { user, token, policies, setPolicies } = useUser();
-  const [claims, setClaims] = useState([]);
+  const [claims, setClaims] = useState<Claim[]>([]);
   const [policiesFetched, setPoliciesFetched] = useState(false);
+  const [signupsEnabled, setSignupsEnabled] = useState(false);
 
-  const handleAddVehicleDevice = (policy) => {
+  const handleAddVehicleDevice = (policy: Policy) => {
     if (policy.type === 'Windscreen') {
       router.push(`/policies/${policy.policy_number}/add-vehicle`);
     } else if (policy.type === 'Device') {
       router.push(`/policies/${policy.policy_number}/add-device`);
     }
   };
+
+  useEffect(() => {
+    fetch('/api/system/features')
+      .then(res => res.json())
+      .then(data => {
+        const isSignupsEnabled = data.signups_enabled === true || data.signups_enabled === 'true';
+        setSignupsEnabled(isSignupsEnabled);
+      })
+      .catch(err => {
+        console.error('Failed to fetch system features:', err);
+        setSignupsEnabled(false);
+      });
+  }, []);
 
   useEffect(() => {
     if (user && token) {
@@ -33,7 +74,7 @@ export default function HomePage() {
             setPolicies(response.data); // Store policies in context
             setPoliciesFetched(true); // Set flag to true
 
-            const policyClaimsPromises = response.data.map(policy =>
+            const policyClaimsPromises = response.data.map((policy: ApiPolicy) =>
               axios.get(`/api/users/${user.id}/policies/${policy.policy_id}/claims`, {
                 headers: {
                   Authorization: `Bearer ${token}`,
@@ -85,13 +126,15 @@ export default function HomePage() {
           >
             Sign In
           </Button>
-          <Button
-            variant="outlined"
-            color="primary"
-            onClick={() => router.push('/signup')}
-          >
-            Sign Up
-          </Button>
+          {signupsEnabled && (
+            <Button
+              variant="outlined"
+              color="primary"
+              onClick={() => router.push('/signup')}
+            >
+              Sign Up
+            </Button>
+          )}
         </Box>
       )}
       {user && (

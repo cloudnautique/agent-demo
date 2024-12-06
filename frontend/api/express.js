@@ -212,4 +212,10 @@ app.post('/api/users/:user_id/policies/:policy_number/devices', async (req, res)
   }
 });
 
+// Get system feature flags
+app.get('/api/system/features', async (req, res) => {
+  const response = await axios.get(`${backendURL}/system/features`);
+  res.status(200).json(response.data);
+});
+
 module.exports = app;

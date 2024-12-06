@@ -1,5 +1,7 @@
 import sqlite3
 import hashlib
+import os
+
 
 def create_tables():
     # Connect to the SQLite database (or create it if it doesn't exist)
@@ -128,8 +130,10 @@ def create_tables():
     conn.commit()
     conn.close()
 
+
 def hash_password(password):
     return hashlib.sha256(password.encode("utf-8")).hexdigest()
+
 
 def seed_database():
     conn = sqlite3.connect("insurance.db")
@@ -138,13 +142,16 @@ def seed_database():
         'SELECT * FROM User WHERE username = "admin"'
     ).fetchone()
     if not admin_exists:
-        hashed_password = hash_password("samsonite")  # Replace with a secure password
+        hashed_password = hash_password(
+            os.getenv("ADMIN_PASSWORD", "samsonite")
+        )  # Replace with a secure password
         conn.execute(
             "INSERT INTO User (first_name, last_name, username, password, email) VALUES (?, ?, ?, ?, ?)",
             ("Admin", "User", "admin", hashed_password, "admin@example.com"),
         )
         conn.commit()
     conn.close()
+
 
 def integrity_check():
     conn = sqlite3.connect("insurance.db")
@@ -153,6 +160,7 @@ def integrity_check():
     cursor.execute("PRAGMA integrity_check;")
     result = cursor.fetchone()
     print("Result", dict(result))
+
 
 if __name__ == "__main__":
     create_tables()

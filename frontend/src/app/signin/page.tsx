@@ -36,7 +36,7 @@ export default function SignInPage() {
 
             // Redirect to the main page
             router.push('/');
-        } catch (error) {
+        } catch (error: any) {
             setError(error.response?.data?.message || 'Failed to sign in');
         }
     };

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { AppBar, Toolbar, Typography, Avatar, Box, Button, Menu, MenuItem } from '@mui/material';
 import { ThemeProvider } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
@@ -33,6 +33,23 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <Box component="main" sx={{ p: 3 }}>
               {children}
             </Box>
+            <Box
+              component="footer"
+              sx={{
+                position: 'fixed',
+                bottom: 0,
+                width: '100%',
+                bgcolor: 'background.paper',
+                p: 2,
+                borderTop: 1,
+                borderColor: 'divider',
+                textAlign: 'center'
+              }}
+            >
+              <Typography variant="body2" color="text.secondary">
+                This app is for demonstration purposes only
+              </Typography>
+            </Box>
           </body>
         </html>
       </ThemeProvider>
@@ -41,7 +58,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 }
 
 function UserOptions() {
-  const { user, setUser, logout } = useUser();
+  const { user, logout } = useUser();
   const router = useRouter();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
@@ -90,14 +107,4 @@ function UserOptions() {
     );
   }
 
-  return (
-    <>
-      <Button color="inherit" onClick={() => router.push('/signin')}>
-        Sign In
-      </Button>
-      <Button color="inherit" onClick={() => router.push('/signup')}>
-        Sign Up
-      </Button>
-    </>
-  );
 }

@@ -30,12 +30,12 @@ const style = {
 const Navbar = () => {
     const [open, setOpen] = useState(false);
     const [username, setUsername] = useState<string | null>(null);
-    const [anchorEl, setAnchorEl] = useState(null);
+    const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
 
     const handleOpen = () => setOpen(true);
     const handleClose = () => setOpen(false);
 
-    const handleMenuOpen = (event) => {
+    const handleMenuOpen = (event: React.MouseEvent<HTMLButtonElement>) => {
         setAnchorEl(event.currentTarget);
     };
 

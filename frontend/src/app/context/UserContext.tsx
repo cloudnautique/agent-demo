@@ -26,6 +26,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
     const [user, setUserState] = useState<User | null>(null);
     const [token, setToken] = useState<string | null>(null);
     const [policies, setPoliciesState] = useState<any[]>([]); // State for policies
+    const [policiesFetched, setPoliciesFetched] = useState(false);
 
     useEffect(() => {
         // Load user, token, and policies from localStorage on initial load
@@ -64,7 +65,16 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
     };
 
     return (
-        <UserContext.Provider value={{ user, token, policies, setUser, setPolicies, logout }}>
+        <UserContext.Provider value={{
+            user,
+            token,
+            policies,
+            setUser,
+            setPolicies,
+            policiesFetched,
+            setPoliciesFetched,
+            logout
+        }}>
             {children}
         </UserContext.Provider>
     );

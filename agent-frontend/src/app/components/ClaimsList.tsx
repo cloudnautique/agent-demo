@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { Claim } from './types';
 import { Container, Typography, Table, TableBody, TableCell, TableHead, TableRow, Paper } from '@mui/material';
 import axios from 'axios';
 import ClaimsSection from './ClaimsSection';
@@ -9,14 +9,14 @@ import ClaimsSection from './ClaimsSection';
 const express_url = 'http://mac-studio.local:3200';
 
 export default function ClaimsList() {
-    const [claims, setClaims] = useState([]);
+    const [claims, setClaims] = useState<Claim[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const [needsAttentionClaims, setNeedsAttentionClaims] = useState([]);
-    const [pendingClaims, setPendingClaims] = useState([]);
-    const [reviewingClaims, setReviewingClaims] = useState([]);
-    const [deniedClaims, setDeniedClaims] = useState([]);
-    const [approvedClaims, setApprovedClaims] = useState([]);
+    const [needsAttentionClaims, setNeedsAttentionClaims] = useState<Claim[]>([]);
+    const [pendingClaims, setPendingClaims] = useState<Claim[]>([]);
+    const [reviewingClaims, setReviewingClaims] = useState<Claim[]>([]);
+    const [deniedClaims, setDeniedClaims] = useState<Claim[]>([]);
+    const [approvedClaims, setApprovedClaims] = useState<Claim[]>([]);
 
     useEffect(() => {
         const fetchClaims = async () => {
@@ -33,13 +33,13 @@ export default function ClaimsList() {
                 });
                 const fetchedClaims = response.data;
                 setClaims(fetchedClaims);
-                setNeedsAttentionClaims(fetchedClaims.filter(claim => claim.internal_status === '2nd Level Review'));
-                setPendingClaims(fetchedClaims.filter(claim => claim.status === 'Pending'));
-                setReviewingClaims(fetchedClaims.filter(claim => claim.internal_status === 'Reviewing'));
-                setDeniedClaims(fetchedClaims.filter(claim => claim.status === 'Denied'));
-                setApprovedClaims(fetchedClaims.filter(claim => claim.status === 'Approved'));
+                setNeedsAttentionClaims(fetchedClaims.filter((claim: Claim) => claim.internal_status === '2nd Level Review'));
+                setPendingClaims(fetchedClaims.filter((claim: Claim) => claim.status === 'Pending'));
+                setReviewingClaims(fetchedClaims.filter((claim: Claim) => claim.internal_status === 'Reviewing'));
+                setDeniedClaims(fetchedClaims.filter((claim: Claim) => claim.status === 'Denied'));
+                setApprovedClaims(fetchedClaims.filter((claim: Claim) => claim.status === 'Approved'));
                 setLoading(false);
-            } catch (error) {
+            } catch (error: any) {
                 setError(error.response?.data?.message || 'Failed to fetch claims');
                 setLoading(false);
             }

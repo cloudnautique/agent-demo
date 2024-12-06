@@ -9,7 +9,13 @@ import { useRouter } from 'next/navigation';
 
 const express_url = 'http://mac-studio.local:3200';
 
-export default function LoginForm({ onClose, onLoginSuccess }) {
+export default function LoginForm({
+    onClose,
+    onLoginSuccess
+}: {
+    onClose?: () => void;
+    onLoginSuccess?: (username: string) => void;
+}) {
     const [credentials, setCredentials] = useState({
         username: '',
         password: '',
@@ -46,7 +52,7 @@ export default function LoginForm({ onClose, onLoginSuccess }) {
 
             // Redirect to the main page
             window.location.href = '/';
-        } catch (error) {
+        } catch (error: any) {
             setError(error.response?.data?.message || 'Failed to sign in');
         }
     };

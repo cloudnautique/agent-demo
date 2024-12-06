@@ -7,10 +7,48 @@ import { useRouter } from 'next/navigation';
 
 const express_url = 'http://mac-studio.local:3200';
 
-export default function ClaimDetail({ params }) {
-    const [claim, setClaim] = useState(null);
-    const [policy, setPolicy] = useState(null);
-    const [checks, setChecks] = useState([]);
+interface Claim {
+    id: string;
+    status: string;
+    internal_status: string;
+    claim_date: string;
+    damage_date: string;
+    date_of_repair: string;
+    cause_of_damage?: string;
+    status_message?: string;
+}
+
+interface Policy {
+    policy: {
+        type: string;
+        policy_number: string;
+        vehicle?: {
+            year: string;
+            make: string;
+            model: string;
+            license_plate: string;
+        };
+        device?: {
+            manufacturer: string;
+            model: string;
+        };
+    };
+}
+
+interface Check {
+    id: string;
+    check_name: string;
+    status: string;
+    reviewed_value: string;
+    expected_value: string;
+    result_message: string;
+    processed_at: string;
+}
+
+export default function ClaimDetail({ params }: { params: { id: string } }) {
+    const [claim, setClaim] = useState<Claim | null>(null);
+    const [policy, setPolicy] = useState<Policy | null>(null);
+    const [checks, setChecks] = useState<Check[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [message, setMessage] = useState('');
@@ -50,7 +88,7 @@ export default function ClaimDetail({ params }) {
 
                 setChecks(checksResponse.data);
                 setLoading(false);
-            } catch (error) {
+            } catch (error: any) {
                 setError(error.response?.data?.message || 'Failed to fetch claim details');
                 setLoading(false);
             }
@@ -59,7 +97,7 @@ export default function ClaimDetail({ params }) {
         fetchClaimDetails();
     }, [id]);
 
-    const handleUpdateStatus = async (newStatus, newInternalStatus) => {
+    const handleUpdateStatus = async (newStatus: string, newInternalStatus: string) => {
         try {
             const token = localStorage.getItem('jwtToken');
             await axios.put(`${express_url}/api/claims/${id}`, {
@@ -73,8 +111,13 @@ export default function ClaimDetail({ params }) {
             });
 
             // Optionally refresh the claim details after the update
-            setClaim(prev => ({ ...prev, status: newStatus, internal_status: newInternalStatus, status_message: message }));
-        } catch (error) {
+            setClaim(prev => prev ? {
+                ...prev,
+                status: newStatus,
+                internal_status: newInternalStatus,
+                status_message: message
+            } : null);
+        } catch (error: any) {
             setError(error.response?.data?.message || 'Failed to update claim status');
         }
     };

@@ -35,7 +35,7 @@ export default function SignUpPage() {
 
             // Redirect to the main page
             router.push('/signin');
-        } catch (error) {
+        } catch (error: any) {
             setError(error.response?.data?.message || 'Failed to create user');
         }
     };

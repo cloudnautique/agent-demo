@@ -15,7 +15,7 @@ export default function AddVehiclePage() {
     const router = useRouter();
     const params = useParams();
     const { policy_number } = params;
-    const { user, token } = useUser();
+    const { user, token, policies, setPolicies } = useUser();
     const [vehicleData, setVehicleData] = useState({
         make: '',
         model: '',
@@ -36,6 +36,15 @@ export default function AddVehiclePage() {
                 },
             })
             .then(() => {
+                // Update policies in context
+                const updatedPolicies = policies.map(policy => {
+                    if (policy.policy_number === policy_number) {
+                        return { ...policy, vehicle: vehicleData };
+                    }
+                    return policy;
+                });
+
+                setPolicies(updatedPolicies);
                 router.push('/');
             })
             .catch((error) => {

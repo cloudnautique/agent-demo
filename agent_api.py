@@ -1,7 +1,8 @@
 import sqlite3
 import hashlib
+import os
 
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_from_directory
 from flask_restx import Api, Resource, fields
 from flask_jwt_extended import (
     JWTManager,
@@ -63,9 +64,6 @@ claim_model = api.model(
         "date_of_repair": fields.String(
             required=True, description="Date when the repair was completed"
         ),
-        "invoices": fields.String(
-            required=True, description="Location of the invoice on disk"
-        ),
         "status": fields.String(
             required=True,
             description="Status of the claim (Pending, Reviewing, Approved, Denied)",
@@ -73,6 +71,9 @@ claim_model = api.model(
         ),
         "status_message": fields.String(
             description="Message from the insurance company regarding the claim status"
+        ),
+        "invoices": fields.String(
+            required=True, description="Location of the invoice on disk"
         ),
         "internal_status": fields.String(
             required=True,
@@ -320,8 +321,13 @@ class ClaimsResource(Resource):
         else:
             claims = db.execute("SELECT * FROM Claims").fetchall()
 
-        # Convert the result to a list of dictionaries
+        # Convert the result to a list of dictionaries and transform invoice paths
         claims_list = [dict(claim) for claim in claims]
+        for claim in claims_list:
+            if claim.get("invoices"):
+                claim["invoices"] = (
+                    f"{request.host_url.rstrip('/')}/claims/{claim['id']}/invoices"
+                )
         return claims_list
 
 
@@ -339,7 +345,12 @@ class ClaimResource(Resource):
         if not claim:
             return {"message": "Claim not found"}, 404
 
-        return dict(claim)
+        claim_dict = dict(claim)
+        if claim_dict.get("invoices"):
+            claim_dict["invoices"] = (
+                f"{request.host_url.rstrip('/')}/claims/{id}/invoices"
+            )
+        return claim_dict
 
     @jwt_required()
     @admin_required
@@ -433,6 +444,33 @@ class ClaimPolicyResource(Resource):
         return get_policy_processing_object(id)
 
 
+@api.route("/claims/<int:id>/invoices")
+class ClaimInvoiceResource(Resource):
+    @jwt_required()
+    @admin_required
+    def get(self, id):
+        """
+        Endpoint to download the invoice file
+        """
+        db = get_db()
+        # Retrieve the claim's invoice path
+        claim = db.execute("SELECT invoices FROM Claims WHERE id = ?", (id,)).fetchone()
+        if not claim or not claim["invoices"]:
+            return {"message": "Invoice file not found for this claim"}, 404
+
+        invoice_path = claim["invoices"]
+        directory, filename = os.path.split(invoice_path)
+
+        if not os.path.exists(invoice_path):
+            return {"message": "Invoice file not found on disk"}, 404
+
+        try:
+            # Serve the file from the directory
+            return send_from_directory(directory, filename, as_attachment=True)
+        except Exception as e:
+            return {"message": f"Error retrieving invoice: {str(e)}"}, 500
+
+
 @api.route("/claims/<int:id>/checks")
 class ClaimChecksResource(Resource):
     @jwt_required()
@@ -518,6 +556,12 @@ def get_checks_for_claim(policy_obj):
                 "date_of_repair < claim_date",
                 None,
                 "<",
+            ),
+            (
+                "Verify the invoice receipt date and date of repair are within 14 days of each other",
+                "date_of_repair - receipt_date <= 14",
+                None,
+                "<=",
             ),
             (
                 "Verify License Plate of policy is on the invoice",

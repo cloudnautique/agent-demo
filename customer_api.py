@@ -20,15 +20,18 @@ from werkzeug.datastructures import FileStorage
 
 app = Flask(__name__)
 
-UPLOAD_FOLDER = "/Users/wmaxwell/code/cloudnautique/insurance_demo/uploads/"
-OTTO_SERVER_URL = "http://127.0.0.1:8080"
+UPLOAD_FOLDER = os.getenv("UPLOAD_FOLDER", "./uploads/")
+OTTO_SERVER_URL = os.getenv("OTTO_SERVER_URL", "http://127.0.0.1:8080")
+OTTO_WORKFLOW = os.getenv("OTTO_WORKFLOW", "windscreen-claim")
+OTTO_BEARER_TOKEN = os.getenv("OTTO_BEARER_TOKEN", "")
+SECRET_KEY = os.getenv("SECRET_KEY", "changemesecret")
 
 # Define the servers for the OpenAPI spec
 servers = [
     {"url": "http://localhost:5000/", "description": "Local development server"},
 ]
 
-app.config["JWT_SECRET_KEY"] = "changemesecret"  # Replace with a strong secret key
+app.config["JWT_SECRET_KEY"] = SECRET_KEY
 app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(hours=10)
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 jwt = JWTManager(app)
@@ -375,6 +378,9 @@ class UserList(Resource):
     @ns_user.marshal_with(user_model_output, code=201)
     def post(self):
         """Create a new user (Sign-Up)"""
+        if os.getenv("DISABLE_SIGNUPS", "false").lower() == "true":
+            return {"message": "Sign-ups are disabled"}, 403
+
         conn = get_db()
         data = request.json
         hashed_password = hash_password(data["password"])
@@ -624,7 +630,15 @@ class PolicyClaims(Resource):
                 ).fetchone()
 
                 try:
-                    requests.post(OTTO_SERVER_URL + "/invoke/claims-agent")
+                    headers = {}
+                    if OTTO_BEARER_TOKEN:
+                        headers["Authorization"] = f"Bearer {OTTO_BEARER_TOKEN}"
+
+                    requests.post(
+                        f"{OTTO_SERVER_URL}/api/invoke/{OTTO_WORKFLOW}?async=true",
+                        json={"input": f"Process claim with ID: {claim_id}"},
+                        headers=headers,
+                    )
                 except Exception as e:
                     print("Error invoking Otto server:", e)
                 except:
@@ -956,6 +970,17 @@ class UserLogin(Resource):
             return {"access_token": access_token, "user": user_data}, 200
         else:
             return {"message": "Invalid username or password"}, 401
+
+
+@api.route("/system/features")
+class SystemFeaturesResource(Resource):
+    def get(self):
+        """
+        Get system feature flags
+        """
+        return {
+            "signups_enabled": os.getenv("DISABLE_SIGNUPS", "false").lower() != "true"
+        }
 
 
 def convert_to_iso8601(date_str):

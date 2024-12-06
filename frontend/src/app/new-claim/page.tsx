@@ -10,7 +10,7 @@ export default function NewClaimPage() {
     const router = useRouter();
     const { user, token, policies } = useUser();
     const [policyId, setPolicyId] = useState('');
-    const [invoice, setInvoice] = useState(null); // To hold the uploaded file
+    const [invoice, setInvoice] = useState<File | null>(null); // To hold the uploaded file
     const [claimDate] = useState(new Date().toISOString().split('T')[0]); // Automatically set to current date
     const [repairDate, setRepairDate] = useState(''); // Repair date
     const [dateOfRepair, setDateOfRepair] = useState(''); // Date of repair
@@ -18,15 +18,22 @@ export default function NewClaimPage() {
 
     const selectedPolicy = policies.find((policy) => policy.policy_number === policyId);
 
-    const handleFileChange = (e) => {
-        setInvoice(e.target.files[0]);
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setInvoice(e.target.files?.[0] || null);
     };
 
     const handleSubmit = async () => {
         try {
+            if (!user) {
+                console.error('No user found');
+                return;
+            }
+
             const formData = new FormData();
-            formData.append('invoice', invoice);
-            formData.append('claim_date', claimDate); // Automatically set to current date
+            if (invoice) {
+                formData.append('invoice', invoice);
+            }
+            formData.append('claim_date', claimDate);
             formData.append('damage_date', repairDate);
             formData.append('date_of_repair', dateOfRepair);
 
