@@ -6,11 +6,13 @@ python agent_api.py &
 python customer_api.py &
 
 cd agent-frontend
-npm run dev &
+pnpm start &
 cd ..
 
+sleep 1
+
 cd frontend
-npm run dev:api &
+pnpm start &
 cd ..
 
 wait

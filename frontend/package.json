@@ -6,7 +6,7 @@
     "dev:api": "nodemon server.js",
     "dev": "next dev",
     "build": "next build",
-    "start": "next start",
+    "start": "concurrently \"next start\" \"node server.js\"",
     "lint": "next lint"
   },
   "dependencies": {
@@ -16,6 +16,7 @@
     "@mui/material": "^5.16.7",
     "api": "^6.1.2",
     "axios": "^1.7.5",
+    "concurrently": "^9.1.0",
     "connect": "^3.7.0",
     "cors": "^2.8.5",
     "express": "^4.19.2",
