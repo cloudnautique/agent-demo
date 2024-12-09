@@ -7,8 +7,6 @@ import { Container, Typography, TextField, Button, Box, Alert } from '@mui/mater
 import axios from 'axios';
 import { useRouter } from 'next/navigation';
 
-const express_url = 'http://mac-studio.local:3200';
-
 export default function LoginForm({
     onClose,
     onLoginSuccess
@@ -34,7 +32,7 @@ export default function LoginForm({
         setSuccess(null);
 
         try {
-            const response = await axios.post(`${express_url}/api/login`, credentials);
+            const response = await axios.post('/api/login', credentials);
 
             const { token, user } = response.data;
             localStorage.setItem('jwtToken', token);

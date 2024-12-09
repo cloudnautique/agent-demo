@@ -6,8 +6,6 @@ import { Container, Typography, Table, TableBody, TableCell, TableHead, TableRow
 import axios from 'axios';
 import ClaimsSection from './ClaimsSection';
 
-const express_url = 'http://mac-studio.local:3200';
-
 export default function ClaimsList() {
     const [claims, setClaims] = useState<Claim[]>([]);
     const [loading, setLoading] = useState(true);
@@ -26,7 +24,7 @@ export default function ClaimsList() {
             }
 
             try {
-                const response = await axios.get(`${express_url}/api/claims`, {
+                const response = await axios.get('/api/claims', {
                     headers: {
                         Authorization: `Bearer ${token}`,
                     },

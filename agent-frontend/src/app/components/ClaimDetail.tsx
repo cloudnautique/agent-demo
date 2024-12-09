@@ -5,8 +5,6 @@ import { Container, Typography, Table, TableBody, TableCell, TableHead, TableRow
 import axios from 'axios';
 import { useRouter } from 'next/navigation';
 
-const express_url = 'http://mac-studio.local:3200';
-
 interface Claim {
     id: string;
     status: string;
@@ -62,7 +60,7 @@ export default function ClaimDetail({ params }: { params: { id: string } }) {
                 const token = localStorage.getItem('jwtToken');
 
                 // Fetch the claim details
-                const claimResponse = await axios.get(`${express_url}/api/claims/${id}`, {
+                const claimResponse = await axios.get(`/api/claims/${id}`, {
                     headers: {
                         Authorization: `Bearer ${token}`,
                     },
@@ -71,7 +69,7 @@ export default function ClaimDetail({ params }: { params: { id: string } }) {
                 setClaim(claimResponse.data);
 
                 // Fetch the policy details
-                const policyResponse = await axios.get(`${express_url}/api/claims/${id}/policy`, {
+                const policyResponse = await axios.get(`/api/claims/${id}/policy`, {
                     headers: {
                         Authorization: `Bearer ${token}`,
                     },
@@ -80,7 +78,7 @@ export default function ClaimDetail({ params }: { params: { id: string } }) {
                 setPolicy(policyResponse.data);
 
                 // Fetch the checks
-                const checksResponse = await axios.get(`${express_url}/api/claims/${id}/checks`, {
+                const checksResponse = await axios.get(`/api/claims/${id}/checks`, {
                     headers: {
                         Authorization: `Bearer ${token}`,
                     },
@@ -100,7 +98,7 @@ export default function ClaimDetail({ params }: { params: { id: string } }) {
     const handleUpdateStatus = async (newStatus: string, newInternalStatus: string) => {
         try {
             const token = localStorage.getItem('jwtToken');
-            await axios.put(`${express_url}/api/claims/${id}`, {
+            await axios.put(`/api/claims/${id}`, {
                 status: newStatus,
                 internal_status: newInternalStatus,
                 status_message: message
