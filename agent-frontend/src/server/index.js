@@ -120,6 +120,4 @@ app.get('/api/claims/:id/policy', async (req, res) => {
     }
 });
 
-app.listen(3200, () => {
-    console.log('Express server running on http://localhost:3200');
-});
+module.exports = app;

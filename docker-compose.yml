@@ -7,7 +7,6 @@ services:
       - "5100:5100"
       - "3000:3000"
       - "3100:3100"
-      - "3200:3200"
     env_file:
       - .env
     restart: unless-stopped 
