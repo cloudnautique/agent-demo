@@ -965,7 +965,8 @@ class UserLogin(Resource):
         ).fetchone()
 
         if user:
-            access_token = create_access_token(identity=dict(user))
+            token_data = {"id": user["id"], "username": user["username"]}
+            access_token = create_access_token(identity=token_data)
             user_data = api.marshal(dict(user), user_model_output)
             return {"access_token": access_token, "user": user_data}, 200
         else:

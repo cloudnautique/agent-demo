@@ -296,7 +296,8 @@ class AuthResource(Resource):
         ).fetchone()
 
         if user:
-            access_token = create_access_token(identity=dict(user))
+            token_data = {"id": user["id"], "username": user["username"]}
+            access_token = create_access_token(identity=token_data)
             return {"access_token": access_token}, 200
         else:
             return {"message": "Invalid username or password"}, 401
