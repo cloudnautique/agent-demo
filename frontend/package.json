@@ -10,31 +10,31 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@emotion/react": "^11.13.3",
-    "@emotion/styled": "^11.13.0",
-    "@mui/icons-material": "^5.11.16",
-    "@mui/material": "^5.16.7",
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.0",
+    "@mui/icons-material": "^5.16.14",
+    "@mui/material": "^5.16.14",
     "api": "^6.1.2",
-    "axios": "^1.7.5",
-    "body-parser": "^1.20.2",
-    "concurrently": "^9.1.0",
+    "axios": "^1.7.9",
+    "body-parser": "^1.20.3",
+    "concurrently": "^9.1.2",
     "connect": "^3.7.0",
     "cors": "^2.8.5",
-    "express": "^4.19.2",
-    "form-data": "^4.0.0",
+    "express": "^4.21.2",
+    "form-data": "^4.0.1",
     "mui": "^0.0.1",
-    "multer": "^1.4.5-lts.1",
-    "next": "^14.2.6",
-    "react": "^18",
-    "react-dom": "^18"
+    "multer": "1.4.5-lts.1",
+    "next": "^14.2.22",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
   },
   "devDependencies": {
-    "@types/node": "^20",
-    "@types/react": "^18",
-    "@types/react-dom": "^18",
-    "eslint": "^8",
+    "@types/node": "^20.17.12",
+    "@types/react": "^18.3.18",
+    "@types/react-dom": "^18.3.5",
+    "eslint": "^8.57.1",
     "eslint-config-next": "14.2.6",
-    "nodemon": "^3.1.4",
-    "typescript": "^5"
+    "nodemon": "^3.1.9",
+    "typescript": "^5.7.2"
   }
 }
