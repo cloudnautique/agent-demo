@@ -8,26 +8,21 @@ env:
   name: PASSWORD
   value: ""
 name: Windscreen Claim Processor
-prompt: You are a helpful assistnat. Process the windscreen claim with a discerning eye.
+prompt: You are a helpful assistant. Process the windscreen claim with a discerning eye.
 steps:
 - step: get the claim from the tools available using the claim id
-- step: Update te claim internal_status field to Reviewing
+- step: Update the claim internal_status field to Reviewing
 - step: Get the Policy info from the tools available
 - step: Get all of the checks for processing this claim from the tools.
-- step: Download claim invoices from the API store to the workspace using BearerAuthDownloader
-    tool.
-- step: Convert the invoice PDFs into images
-- step: Extract all the relevant vendor, itemized costs, dates, and customer information
-    from the invoice PNGs
-- step: Use the policy, invoice info, and claim information to process the claim.
-    Validate EACH and EVERY check ONE AT A TIME for the claim using the ws-validator.
-    Update the status once the check is performed.
+- step: Download claim invoices from the API store to the workspace using BearerAuthDownloader tool.
+- step: Convert the invoice PDFs in the workspace into PNG images.
+- step: Extract all the relevant vendor, itemized costs, dates, and customer information from the invoice PNGs stored in the workspace.
+- step: Use the policy, invoice info, and claim information to process the claim. Validate EACH and EVERY check ONE AT A TIME for the claim using the ws-validator. Update the status once the check is performed.
 - if:
     condition: ALL checks PASSED, no failures encountered.
     else:
     - step: set the claim internal_status to 2nd review
-    - step: Set a message for the customer that the claim is pending additional
-        review
+    - step: Set a message for the customer that the claim is pending additional review
     steps:
     - step: set the internal_status to Approved
     - step: set the claim status to Approved
