@@ -12,7 +12,7 @@ Return the raw response in the format it was retrieved.
 Name: Downloader
 Description: Download a file using bearer auth to the workspace.
 Tools: github.com/cloudnautique/experimental-tools/downloader/bearerAuth
-Credentials: ./credential as ins-api-demo.cloudnautique.comBearerAuth with "" as prefix and "BEARER_AUTH_JWT" as env and "https://ins-api-demo.cloudnautique.com/login" as login_url
+Credentials: ./credential as windscreenDownloaderAuth with "" as prefix and "BEARER_AUTH_JWT" as env and "https://ins-api-demo.cloudnautique.com/login" as login_url
 Params: url: Url to download the file from.
 Params: filename: name of file to save as in the workspace
 
