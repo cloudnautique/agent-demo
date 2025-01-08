@@ -415,7 +415,7 @@ class ClaimResource(Resource):
                 updated_data.get("claim_date", claim["claim_date"]),
                 updated_data.get("damage_date", claim["damage_date"]),
                 updated_data.get("date_of_repair", claim["date_of_repair"]),
-                updated_data.get("invoices", claim["invoices"]),
+                claim["invoices"],
                 updated_data.get("status", claim["status"]),
                 updated_data.get("status_message", claim["status_message"]),
                 updated_data.get("internal_status", claim["internal_status"]),
