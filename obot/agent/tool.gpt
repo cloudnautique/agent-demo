@@ -1,0 +1,20 @@
+Name: Claims
+Description: Call this tool to handle all things claims related.
+Params: prompt: What is the claims request
+Credentials: ./credential as ins-api-demo.cloudnautique.comBearerAuth with "Bearer" as prefix and "GPTSCRIPT_INS_API_DEMO_CLOUDNAUTIQUE_COM_BEARERAUTH" as env and "https://ins-api-demo.cloudnautique.com/login" as login_url
+Tools: https://ins-api-demo.cloudnautique.com/swagger.json
+Share Tools: Downloader
+
+Use the available tools to service the request. 
+Return the raw response in the format it was retrieved.
+
+---
+Name: Downloader
+Description: Download a file using bearer auth to the workspace.
+Tools: github.com/cloudnautique/experimental-tools/downloader/bearerAuth
+Credentials: ./credential as ins-api-demo.cloudnautique.comBearerAuth with "" as prefix and "BEARER_AUTH_JWT" as env and "https://ins-api-demo.cloudnautique.com/login" as login_url
+Params: url: Url to download the file from.
+Params: filename: name of file to save as in the workspace
+
+Use the tools available to download the file from the url to the workspace
+
