@@ -16,7 +16,7 @@ steps:
 - step: Get all of the checks for processing this claim from the tools.
 - step: Download claim invoices from the API store to the workspace using BearerAuthDownloader tool.
 - step: Convert the invoice PDFs in the workspace into PNG images.
-- step: Extract all the relevant vendor, itemized costs, dates, and customer information from the invoice PNGs stored in the workspace.
+- step: Extract all the relevant vendor, itemized costs, dates, and customer information, detailed car information from the invoice PNGs stored in the workspace.
 - step: Use the policy, invoice info, and claim information to process the claim. Validate EACH and EVERY check ONE AT A TIME for the claim using the ws-validator. Update the status once the check is performed.
 - if:
     condition: ALL checks PASSED, no failures encountered.

@@ -565,10 +565,16 @@ def get_checks_for_claim(policy_obj):
                 "<=",
             ),
             (
-                "Verify License Plate of policy is on the invoice",
+                "Verify a license plate number of the vehicle is on the invoice",
                 policy["vehicle"]["license_plate"],
                 None,
                 "IN",
+            ),
+            (
+                "Verify License Plate of policy matches the plate on the invoice",
+                policy["vehicle"]["license_plate"],
+                None,
+                "=",
             ),
             (
                 "Verify Policy Number is on the invoice",
