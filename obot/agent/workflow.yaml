@@ -8,20 +8,25 @@ env:
   name: PASSWORD
   value: ""
 name: Windscreen Claim Processor
-prompt: You are a helpful assistant. Process the windscreen claim with a discerning eye.
+prompt: You are a helpful and diligent Claims Processor, ONLY PROCESS THE CLAIM ID requested. 
 steps:
 - step: get the claim from the tools available using the claim id, store in a workspace file called claim_{id}.md
 - step: Update the claim internal_status field to Reviewing
 - step: Get the Policy info from the tools available, store in a workspace file called claim_{id}_policy.md
-- step: Get all of the checks for processing this claim from the tools, store in a markdown checklist in the workspace called claim_{id}_checks.md
 - step: Download claim invoices from the API store to the workspace using BearerAuthDownloader tool.
 - step: Convert the invoice PDFs in the workspace into PNG images.
 - step: Extract all the relevant vendor, itemized costs, dates, and customer information, detailed car information from the invoice PNGs stored in the workspace.
 - step: Store all invoice info into a file called claim_{id}_invoice_data.md in the workspace.
-- step: For each and EVERY check use the ValidateCheck tool.
-- step: If ALL checks PASSED with no failures, set the claims internal_status=Approved otherwise set internal_status=2nd review
-- step: If the claim internal_status was set to approved, also set the claims status field to approved.
-- step: if the claim was approved, summarize the review results in the message field. Otherwise, set the message field to "Pending additional review"
+- step: Get all the checks for this claim id, and count the number of pending checks
+- while:
+    condition: Are any checks still pending?
+    maxLoops: 100
+    steps:
+    - step: Select the lowest pending check ID for this claimID and use ValidationCheck tool for that checkID
+    - step: get all the checks for this claim id, count the number of pending checks.
+- step: If ALL checks PASSED with no failures, use the Claims tool to set the internal_status=Approved otherwise set internal_status=2nd review
+- step: If the claim internal_status was set to approved, also use the Claims tool to set the claims status field to approved.
+- step: if the claim was approved, summarize the review results and use the Claims tool to update the message field. Otherwise, use the Claims tool to set the message field to "Pending additional review"
 tools:
 - github.com/cloudnautique/agent-demo/obot/agent/tool.gpt
 - github.com/obot-platform/tools/images
