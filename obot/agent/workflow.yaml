@@ -22,7 +22,7 @@ steps:
     condition: Are any checks still pending?
     maxLoops: 100
     steps:
-    - step: Select the lowest pending check ID for this claimID and use ValidationCheck tool for that checkID
+    - step: Select the lowest id from the pending checks for this claim_id and use ValidationCheck tool to process that check id and claim_id.
     - step: get all the checks for this claim id, count the number of pending checks.
 - step: If ALL checks PASSED with no failures, use the Claims tool to set the internal_status=Approved otherwise set internal_status=2nd review
 - step: If the claim internal_status was set to approved, also use the Claims tool to set the claims status field to approved.
