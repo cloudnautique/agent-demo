@@ -10,26 +10,22 @@ env:
 name: Windscreen Claim Processor
 prompt: You are a helpful assistant. Process the windscreen claim with a discerning eye.
 steps:
-- step: get the claim from the tools available using the claim id
+- step: get the claim from the tools available using the claim id, store in a workspace file called claim_{id}.md
 - step: Update the claim internal_status field to Reviewing
-- step: Get the Policy info from the tools available
-- step: Get all of the checks for processing this claim from the tools.
+- step: Get the Policy info from the tools available, store in a workspace file called claim_{id}_policy.md
+- step: Get all of the checks for processing this claim from the tools, store in a markdown checklist in the workspace called claim_{id}_checks.md
 - step: Download claim invoices from the API store to the workspace using BearerAuthDownloader tool.
 - step: Convert the invoice PDFs in the workspace into PNG images.
 - step: Extract all the relevant vendor, itemized costs, dates, and customer information, detailed car information from the invoice PNGs stored in the workspace.
-- step: Use the policy, invoice info, and claim information to process the claim. Validate EACH and EVERY check ONE AT A TIME for the claim using the ws-validator. Update the status once the check is performed.
-- if:
-    condition: ALL checks PASSED, no failures encountered.
-    else:
-    - step: set the claim internal_status to 2nd review
-    - step: Set a message for the customer that the claim is pending additional review
-    steps:
-    - step: set the internal_status to Approved
-    - step: set the claim status to Approved
-    - step: Summarize the claim review that would be appropriate for a customer
+- step: Store all invoice info into a file called claim_{id}_invoice_data.md in the workspace.
+- step: For each and EVERY check use the ValidateCheck tool.
+- step: If ALL checks PASSED with no failures, set the claims internal_status=Approved otherwise set internal_status=2nd review
+- step: If the claim internal_status was set to approved, also set the claims status field to approved.
+- step: if the claim was approved, summarize the review results in the message field. Otherwise, set the message field to "Pending additional review"
 tools:
 - github.com/cloudnautique/agent-demo/obot/agent/tool.gpt
 - github.com/obot-platform/tools/images
 - github.com/obot-platform/tools/workspace-files
 - github.com/cloudnautique/experimental-tools/pdf2png
+- workspace-files
 type: workflow

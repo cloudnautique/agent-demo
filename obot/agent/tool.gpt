@@ -1,5 +1,5 @@
 Name: Claims
-Description: Call this tool to handle all things claims related.
+Description: Call this tool to work with claims and policy information.
 Params: prompt: What is the claims request
 Credentials: ./credential as ins-api-demo.cloudnautique.comBearerAuth with "Bearer" as prefix and "GPTSCRIPT_INS_API_DEMO_CLOUDNAUTIQUE_COM_BEARERAUTH" as env and "https://ins-api-demo.cloudnautique.com/login" as login_url
 Tools: https://ins-api-demo.cloudnautique.com/swagger.json
