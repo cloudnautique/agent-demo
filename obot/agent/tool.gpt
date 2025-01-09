@@ -22,7 +22,7 @@ Name: ValidationCheck
 Description: Perform a validation check on the claims data
 Credentials: ./credential as ins-api-demo.cloudnautique.comBearerAuth with "Bearer" as prefix and "GPTSCRIPT_INS_API_DEMO_CLOUDNAUTIQUE_COM_BEARERAUTH" as env and "https://ins-api-demo.cloudnautique.com/login" as login_url
 Tools: https://ins-api-demo.cloudnautique.com/swagger.json
-Tools: workspace-files
+Tools: github.com/obot-platform/tools/workspace-files
 Params: prompt: The check to perform
 Params: claimId: ID of the claim being processed.
 Params: checkId: ID of the check being processed.
