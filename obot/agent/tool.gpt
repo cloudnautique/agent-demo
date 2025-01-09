@@ -6,7 +6,7 @@ Tools: https://ins-api-demo.cloudnautique.com/swagger.json
 Share Tools: Downloader, ValidationCheck
 
 Use the available tools to service the request. 
-Return the raw response in the format it was retrieved.
+Return the raw JSON response.
 
 ---
 Name: Downloader
