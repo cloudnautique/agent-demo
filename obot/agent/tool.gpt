@@ -1,35 +1,36 @@
 Name: Claims
-Description: Call this tool to work with claims and policy information.
-Params: prompt: What is the claims request
+Description: Interact with claim details, policy, and vehicle information.
+Params: prompt: specify claim id and requested infromation.
 Credentials: ./credential as ins-api-demo.cloudnautique.comBearerAuth with "Bearer" as prefix and "GPTSCRIPT_INS_API_DEMO_CLOUDNAUTIQUE_COM_BEARERAUTH" as env and "https://ins-api-demo.cloudnautique.com/login" as login_url
 Tools: https://ins-api-demo.cloudnautique.com/swagger.json
 Share Tools: Downloader, ValidationCheck
 
-Use the available tools to service the request. 
-Return the raw JSON response.
+Use the available tools to process the ${PROMPT} for the claim id passed.
+Return the raw JSON responses.
 
 ---
 Name: Downloader
-Description: Download a file using bearer auth to the workspace.
+Description: Retrieve a file from the specified URL and save it to the workspace.
 Tools: github.com/cloudnautique/experimental-tools/downloader/bearerAuth
 Credentials: ./credential as windscreenDownloaderAuth with "" as prefix and "BEARER_AUTH_JWT" as env and "https://ins-api-demo.cloudnautique.com/login" as login_url
-Params: url: Url to download the file from.
-Params: filename: name of file to save as in the workspace
+Params: url: Specify the URL of the file to download.
+Params: filename: Specify the desired filename in the workspace for the downloaded file. 
 
-Use the tools available to download the file from the url to the workspace
+Download the file from the specified URL and save it to the workspace with the given filename.
 ---
 Name: ValidationCheck
-Description: Perform a validation check on the claims data
+Description: Executes a validation check on claim data and updates the database with results.
 Credentials: ./credential as ins-api-demo.cloudnautique.comBearerAuth with "Bearer" as prefix and "GPTSCRIPT_INS_API_DEMO_CLOUDNAUTIQUE_COM_BEARERAUTH" as env and "https://ins-api-demo.cloudnautique.com/login" as login_url
 Tools: https://ins-api-demo.cloudnautique.com/swagger.json
 Tools: github.com/obot-platform/tools/workspace-files
-Params: prompt: The check to perform
-Params: claimId: ID of the claim being processed.
-Params: checkId: ID of the check being processed.
+Params: prompt: Specify the validation check to perform.
+Params: claimId: Provide the claim ID of the claim being processed.
+Params: checkId: Provide the check ID being processed.
+Params: CheckName: Provide the check_name field from the check api.
 Params: invoiceMarkdownFile: The workspace filename of the parsed invoice data in markdown.
 Params: claimMarkdownFile: The workspace filename of the claim markdown.
 Params: policyMarkdownFile: The workspace filename of the policy markdown data.
 
-Read the markdown data files from the workspace and perform the check.
-Use the put_claim_check_resource tool to update the status of the claims check.
+Read the necessary markdown data files from the workspace and perform the requested check.
+Making sure to include the actual data values(eg. dates, dollar amounts, etc.) , use the put_claim_check_resource tool to update the status of the claims check.
 Respond with the results of the check.
