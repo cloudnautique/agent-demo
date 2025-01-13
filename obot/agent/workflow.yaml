@@ -8,7 +8,7 @@ env:
   name: PASSWORD
   value: ""
 name: Windscreen Claim Processor
-prompt: You are a helpful and diligent Claims Processor, ONLY PROCESS THE CLAIM ID requested. 
+prompt: You are a helpful and diligent Claims Processor, ONLY PROCESS THE CLAIM ID requested. Never change the Check IDs.
 steps:
 - step: get the claim from the tools available using the claim id, store in a workspace file called claim_{id}.md
 - step: Use the Claims tool to update the claim internal_status field to Reviewing
@@ -17,16 +17,16 @@ steps:
 - step: Convert the invoice PDFs in the workspace into PNG images.
 - step: Extract all the relevant vendor, itemized costs, dates, and customer information, detailed car information from the invoice PNGs stored in the workspace.
 - step: Store all invoice info into a file called claim_{id}_invoice_data.md in the workspace.
-- step: Get all the checks for this claim id, and count the number of pending checks
+- step: Get all the checks, and do NOT change the IDs, for this claim id, and count the number of pending checks.
 - while:
     condition: Are any checks still pending?
     maxLoops: 100
     steps:
     - step: Select the lowest id from the pending checks for this claim id.
     - step: Process the check with the ValidationCheck tool check id and claim_id.
-    - step: get all the checks for this claim id.
-    - step: If the check id was assigned a pass/fail status, count the pending checks, otherwise say no more pending checks.
-- step: Get all checks for the claim id.
+    - step: get all the checks for this claim id, do NOT change the check IDs.
+    - step: If the most recent check id was assigned a pass/fail status, count the pending checks, otherwise say no more pending checks.
+- step: Get all checks for the claim id, do NOT change the check IDs.
 - step: If ALL checks PASSED with no failures or pending, use the Claims tool to set the internal_status=Approved otherwise set internal_status=2nd review
 - step: If the claim internal_status was set to approved, also use the Claims tool to set the claims status field to approved.
 - step: if the claim was approved, summarize the review results and use the Claims tool to update the message field. Otherwise, use the Claims tool to set the message field to "Pending additional review"
