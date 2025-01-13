@@ -40,7 +40,7 @@ Perform the check, and respond with the check status making sure to include the 
 Name: UpdateCheckStatus
 Description: Stores the check status in the database.
 Credentials: ./credential as ins-api-demo.cloudnautique.comBearerAuth with "Bearer" as prefix and "GPTSCRIPT_INS_API_DEMO_CLOUDNAUTIQUE_COM_BEARERAUTH" as env and "https://ins-api-demo.cloudnautique.com/login" as login_url
-Tools: put_update_check_resource from https://ins-api-demo.cloudnautique.com/swagger.json
+Tools: put_claim_check_resource from https://ins-api-demo.cloudnautique.com/swagger.json
 Params: claimId: Provide the claim ID of the claim being processed.
 Params: checkId: Provide the check ID being processed.
 Params: status: This is a pass or failed value
