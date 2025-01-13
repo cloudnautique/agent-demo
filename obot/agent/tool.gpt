@@ -4,9 +4,10 @@ Params: prompt: specify claim id and requested infromation.
 Credentials: ./credential as ins-api-demo.cloudnautique.comBearerAuth with "Bearer" as prefix and "GPTSCRIPT_INS_API_DEMO_CLOUDNAUTIQUE_COM_BEARERAUTH" as env and "https://ins-api-demo.cloudnautique.com/login" as login_url
 Tools: https://ins-api-demo.cloudnautique.com/swagger.json
 Share Tools: Downloader, ValidationCheck
+JSON Response: true
 
 Use the available tools to process the ${PROMPT} for the claim id passed.
-Return the raw JSON responses.
+Return the raw JSON responses from the tool call.
 
 ---
 Name: Downloader
