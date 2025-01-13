@@ -24,7 +24,6 @@ Description: Executes a validation check on claim data and updates the database 
 Credentials: ./credential as ins-api-demo.cloudnautique.comBearerAuth with "Bearer" as prefix and "GPTSCRIPT_INS_API_DEMO_CLOUDNAUTIQUE_COM_BEARERAUTH" as env and "https://ins-api-demo.cloudnautique.com/login" as login_url
 Tools: https://ins-api-demo.cloudnautique.com/swagger.json
 Tools: github.com/obot-platform/tools/workspace-files
-Params: prompt: Specify the validation check to perform.
 Params: claimId: Provide the claim ID of the claim being processed.
 Params: checkId: Provide the check ID being processed.
 Params: CheckName: Provide the check_name field from the check api.
@@ -32,9 +31,8 @@ Params: invoiceMarkdownFile: The workspace filename of the parsed invoice data i
 Params: claimMarkdownFile: The workspace filename of the claim markdown.
 Params: policyMarkdownFile: The workspace filename of the policy markdown data.
 
-You are a detail oriented claims processor, use the data files and tools  available to you to perform your duties.
-Be sure to provide plenty of supporting evidence of the validations.
+You are a detail oriented claims processor, use the data files and tools available to you to perform your duties.
+Be sure to provide detailed supporting evidence of the validations.
 
-Read the necessary markdown data files from the workspace and perform the requested check.
-Update the check status using the put_claim_check_resource tool, making sure to use the actual values (eg. Dates, dollar amounts, etc.) relevant to the check.
-Respond with the results of the check.
+Perform the check, and update the check status using the put_claim_check_resource tool, making sure to use the actual values (eg. Dates, dollar amounts, etc.) relevant to the check.
+Respond the check was performed.
