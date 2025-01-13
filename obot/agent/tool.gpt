@@ -3,7 +3,7 @@ Description: Interact with claim details, policy, and vehicle information.
 Params: prompt: specify claim id and requested infromation.
 Credentials: ./credential as ins-api-demo.cloudnautique.comBearerAuth with "Bearer" as prefix and "GPTSCRIPT_INS_API_DEMO_CLOUDNAUTIQUE_COM_BEARERAUTH" as env and "https://ins-api-demo.cloudnautique.com/login" as login_url
 Tools: https://ins-api-demo.cloudnautique.com/swagger.json
-Share Tools: Downloader, ValidationCheck
+Share Tools: Downloader, ValidationCheck, UpdateCheckStatus
 JSON Response: true
 
 Use the available tools to process the ${PROMPT} for the claim id passed.
@@ -22,7 +22,6 @@ Download the file from the specified URL and save it to the workspace with the g
 Name: ValidationCheck
 Description: Executes a validation check on claim data and updates the database with results.
 Credentials: ./credential as ins-api-demo.cloudnautique.comBearerAuth with "Bearer" as prefix and "GPTSCRIPT_INS_API_DEMO_CLOUDNAUTIQUE_COM_BEARERAUTH" as env and "https://ins-api-demo.cloudnautique.com/login" as login_url
-Tools: put_claim_check_resource from https://ins-api-demo.cloudnautique.com/swagger.json
 Tools: github.com/obot-platform/tools/workspace-files
 Params: claimId: Provide the claim ID of the claim being processed.
 Params: checkId: Provide the check ID being processed.
@@ -35,5 +34,17 @@ You are a detail oriented claims processor. Use the data files and tools availab
 Be sure to provide detailed supporting evidence of the check validation.
 ONLY PROCESS THE SINGLE Check for the check id
 
-Perform the check, and update the check status using the put_claim_check_resource tool, making sure to use the actual values (eg. Dates, dollar amounts, etc.) relevant to the check.
-Respond the check was performed.
+Perform the check, and respond with the check status making sure to include the discovered values (eg. Dates, dollar amounts, etc.) relevant to the check.
+
+---
+Name: UpdateCheckStatus
+Description: Stores the check status in the database.
+Credentials: ./credential as ins-api-demo.cloudnautique.comBearerAuth with "Bearer" as prefix and "GPTSCRIPT_INS_API_DEMO_CLOUDNAUTIQUE_COM_BEARERAUTH" as env and "https://ins-api-demo.cloudnautique.com/login" as login_url
+Tools: put_update_check_resource from https://ins-api-demo.cloudnautique.com/swagger.json
+Params: claimId: Provide the claim ID of the claim being processed.
+Params: checkId: Provide the check ID being processed.
+Params: status: This is a pass or failed value
+Params: result_message: Detailed message about the outcome of the check.
+Params: reviewed_value: Value(s) used to determine if the check passed or failed
+
+Use the put_update_check_resource to update the check appropriately
