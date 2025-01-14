@@ -1,5 +1,5 @@
 Name: Claims
-Description: Interact with claim details, policy, and vehicle information.
+Description: Get and set claim, policy, and vehicle information.
 Params: prompt: specify claim id and requested infromation.
 Credentials: ./credential as ins-api-demo.cloudnautique.comBearerAuth with "Bearer" as prefix and "GPTSCRIPT_INS_API_DEMO_CLOUDNAUTIQUE_COM_BEARERAUTH" as env and "https://ins-api-demo.cloudnautique.com/login" as login_url
 Tools: https://ins-api-demo.cloudnautique.com/swagger.json
