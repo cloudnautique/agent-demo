@@ -559,8 +559,8 @@ def get_checks_for_claim(policy_obj):
                 "<",
             ),
             (
-                "Verify the invoice receipt date and date of repair are within 14 days of each other",
-                "date_of_repair - receipt_date <= 14",
+                "Verify the invoice date and date of repair are within 14 days of each other",
+                "date_of_repair - invoice_date <= 14",
                 None,
                 "<=",
             ),
