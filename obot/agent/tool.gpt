@@ -49,3 +49,7 @@ Params: result_message: Detailed message about the outcome of the check.
 Params: reviewed_value: Value(s) used to determine if the check passed or failed
 
 Use the put_update_check_resource to update the check appropriately
+---
+Name: API Auth Cred
+Share Credential: ./credential as ins-api-demo.cloudnautique.comBearerAuth with "Bearer" as prefix and "GPTSCRIPT_INS_API_DEMO_CLOUDNAUTIQUE_COM_BEARERAUTH" as env and "https://ins-api-demo.cloudnautique.com/login" as login_url
+Type: credential
