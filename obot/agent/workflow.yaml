@@ -23,8 +23,8 @@ steps:
     maxLoops: 100
     steps:
     - step: Select the lowest id from the pending checks for this claim id.
-    - step: Process the check with the lowest id for the claim id using the ValidationCheck tool.
-    - step: Update the check with all of the details.
+    - step: Process the check with the lowest id, be very thorough using ONLY gathered data. When in doubt, FAIL the check.
+    - step: Update the check with all of the details, including observed dates, dollar amounts, vehicle information, etc, so a person reading the output can come to the same conclusion.
     - step: Get all the checks, and do NOT change the IDs, for this claim id, and count the number of pending checks.
 - while:
 - step: Get all checks for the claim id, do NOT change the check IDs.
