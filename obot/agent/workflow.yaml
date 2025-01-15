@@ -8,12 +8,12 @@ env:
   name: PASSWORD
   value: ""
 name: Windscreen Claim Processor
-prompt: You are a helpful and diligent Claims Processor, ONLY PROCESS THE CLAIM ID requested. Never change the Check IDs.
+prompt: You are a helpful and diligent Claims Processor, ONLY PROCESS THE CLAIM ID requested. Follow each step exactly, do not do more then what is asked of you.
 steps:
-- step: Use the Claims tool to update the claim internal_status field to Reviewing.
-- step: get the claim from the tools available using the claim id, store in a workspace file called claim_{id}.md
-- step: Get the Policy info from the tools available, store in a workspace file called claim_{id}_policy.md
-- step: Download claim invoices from the API store to the workspace using BearerAuthDownloader tool.
+- step: Set the claims internal_status field to Reviewing.
+- step: get the full claim from the tools available using the claim id.
+- step: Get the Policy info from the tools available.
+- step: Use the BearerAuthDownloader tool to download the claim invoices from the API store to the workspace.
 - step: Convert the invoice PDFs in the workspace into PNG images.
 - step: Extract all the relevant vendor, itemized costs, dates, and customer information, detailed car information from the invoice PNGs stored in the workspace.
 - step: Store all invoice info into a file called claim_{id}_invoice_data.md in the workspace.
@@ -32,7 +32,8 @@ steps:
 - step: If the claim internal_status was set to approved, also use the Claims tool to set the claims status field to approved.
 - step: if the claim was approved, summarize the review results and use the Claims tool to update the message field. Otherwise, use the Claims tool to set the message field to "Pending additional review"
 tools:
-- github.com/cloudnautique/agent-demo/obot/agent/tool.gpt
+- https://ins-api-demo.cloudnautique.com/swagger.json
+- Downloader from github.com/cloudnautique/agent-demo/obot/agent/tool.gpt
 - github.com/obot-platform/tools/images
 - github.com/obot-platform/tools/workspace-files
 - github.com/cloudnautique/experimental-tools/pdf2png

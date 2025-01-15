@@ -547,7 +547,7 @@ def get_checks_for_claim(policy_obj):
     if policy["type"] == "Windscreen":
         checks["Windscreen"] = [
             (
-                "Verify damage_date is before claim_date",
+                "Verify damage_date occurred before claim_date",
                 "damage_date < claim_date",
                 None,
                 "<",
@@ -559,8 +559,14 @@ def get_checks_for_claim(policy_obj):
                 "<",
             ),
             (
+                "Verify the date on the invoice is before claim_date",
+                "invoice_date < claim_date",
+                None,
+                "<",
+            ),
+            (
                 "Verify the date on the invoice and date of repair are within 14 days of each other",
-                "date_of_repair - invoice_date <= 14",
+                "delta between date_of_repair and invoice_date <= 14",
                 None,
                 "<=",
             ),
