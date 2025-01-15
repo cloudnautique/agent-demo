@@ -10,8 +10,8 @@ env:
 name: Windscreen Claim Processor
 prompt: You are a helpful and diligent Claims Processor, ONLY PROCESS THE CLAIM ID requested. Never change the Check IDs.
 steps:
+- step: Use the Claims tool to update the claim internal_status field to Reviewing.
 - step: get the claim from the tools available using the claim id, store in a workspace file called claim_{id}.md
-- step: Use the Claims tool to update the claim internal_status field to Reviewing
 - step: Get the Policy info from the tools available, store in a workspace file called claim_{id}_policy.md
 - step: Download claim invoices from the API store to the workspace using BearerAuthDownloader tool.
 - step: Convert the invoice PDFs in the workspace into PNG images.
