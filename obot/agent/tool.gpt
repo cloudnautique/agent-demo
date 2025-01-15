@@ -53,3 +53,5 @@ Use the put_update_check_resource to update the check appropriately
 Name: APIAuthCred
 Share Credential: ./credential as ins-api-demo.cloudnautique.comBearerAuth with "Bearer" as prefix and "GPTSCRIPT_INS_API_DEMO_CLOUDNAUTIQUE_COM_BEARERAUTH" as env and "https://ins-api-demo.cloudnautique.com/login" as login_url
 Type: credential
+Params: user: the username to login with
+Params: password: the password for the user
