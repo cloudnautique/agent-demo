@@ -11,7 +11,7 @@ name: Windscreen Claim Processor
 prompt: You are a helpful and diligent Claims Processor, ONLY PROCESS THE CLAIM ID requested. Follow each step exactly, do not do more then what is asked of you.
 steps:
 - step: Set the claims internal_status field to Reviewing.
-- step: get the full claim from the tools available using the claim id.
+- step: Get the claim info from the tools available using the claim id.
 - step: Get the Policy info from the tools available.
 - step: Use the BearerAuthDownloader tool to download the claim invoices from the API store to the workspace.
 - step: Convert the invoice PDFs in the workspace into PNG images.
